@@ -106,7 +106,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <main className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       <Navbar activeSection={activeSection} setActiveSection={setActiveSection} />
       
       <div className="pt-20">
@@ -114,10 +114,10 @@ export default function Home() {
           <>
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="text-center">
-                <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+                <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-dark-text mb-6">
                   Your AI-Powered Nutrition Companion
                 </h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                <p className="text-xl text-gray-600 dark:text-dark-text-secondary mb-8">
                   Get personalized meal plans and nutritional guidance powered by artificial intelligence
                 </p>
                 <button
@@ -131,13 +131,13 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 py-16">
+            <div className="bg-white dark:bg-dark-card py-16">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-dark-text">
                     Why Choose MacroMindAI?
                   </h2>
-                  <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
+                  <p className="mt-4 text-lg text-gray-600 dark:text-dark-text-secondary">
                     Our platform combines cutting-edge AI technology with proven nutrition science
                   </p>
                 </div>
@@ -152,7 +152,7 @@ export default function Home() {
             <div className="py-16">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-dark-text">
                     What Our Users Say
                   </h2>
                 </div>
@@ -160,7 +160,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 py-16">
+            <div className="bg-white dark:bg-dark-card py-16">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <AboutSection />
               </div>
@@ -170,15 +170,15 @@ export default function Home() {
 
         {activeSection === 'generator' && (
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-8">
+            <div className="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 sm:p-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-dark-text mb-8">
                 Generate Your Personalized Diet Plan
               </h2>
               <DietPlanGenerator onSubmit={handleSubmit} loading={loading} />
               
               {dietPlan && (
                 <div className="mt-12">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-dark-text mb-6">
                     Your Personalized Meal Plan
                   </h3>
                   <MealPlanDisplay

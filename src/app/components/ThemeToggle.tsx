@@ -1,3 +1,5 @@
+'use client';
+
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -10,17 +12,19 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
-        <div className="w-5 h-5" />
-      </button>
+      <button
+        className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-dark-card border border-gray-300 dark:border-dark-border"
+        aria-label="Loading theme toggle"
+      />
     );
   }
 
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
-                 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-dark-card border border-gray-300 dark:border-dark-border
+                 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-dark-bg transition-colors"
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
     >
       {theme === 'dark' ? (
         <svg
@@ -29,7 +33,7 @@ export function ThemeToggle() {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-5 h-5 text-gray-800 dark:text-gray-200"
+          className="w-5 h-5 text-dark-text"
         >
           <path
             strokeLinecap="round"
@@ -44,7 +48,7 @@ export function ThemeToggle() {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-5 h-5 text-gray-800 dark:text-gray-200"
+          className="w-5 h-5 text-gray-900"
         >
           <path
             strokeLinecap="round"
