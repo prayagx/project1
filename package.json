@@ -1,0 +1,35 @@
+{
+  "name": "diet-planner-pro",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "open-chrome": "open -a 'Google Chrome' http://localhost:3001",
+    "chrome": "node scripts/start.mjs",
+    "live": "node scripts/live-server.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "netlify-dev": "netlify dev"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "next": "^15.2.2",
+    "next-themes": "^0.4.6",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.10.0",
+    "@types/node": "20.11.24",
+    "@types/react": "18.2.61",
+    "@types/react-dom": "18.2.19",
+    "autoprefixer": "10.4.17",
+    "eslint": "8.57.0",
+    "eslint-config-next": "13.5.6",
+    "open": "^10.1.0",
+    "postcss": "8.4.35",
+    "tailwindcss": "3.4.1",
+    "typescript": "5.3.3"
+  }
+}
