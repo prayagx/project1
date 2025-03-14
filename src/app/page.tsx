@@ -111,24 +111,61 @@ export default function Home() {
       
       <div className="pt-20">
         {activeSection === 'home' && (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="text-center">
-              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                Your AI-Powered Nutrition Companion
-              </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-                Get personalized meal plans and nutritional guidance powered by artificial intelligence
-              </p>
-              <button
-                onClick={() => setActiveSection('generator')}
-                className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-semibold
-                         hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500
-                         focus:ring-offset-2 transition-colors"
-              >
-                Create Your Diet Plan
-              </button>
+          <>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="text-center">
+                <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+                  Your AI-Powered Nutrition Companion
+                </h1>
+                <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                  Get personalized meal plans and nutritional guidance powered by artificial intelligence
+                </p>
+                <button
+                  onClick={() => setActiveSection('generator')}
+                  className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-semibold
+                           hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500
+                           focus:ring-offset-2 transition-colors"
+                >
+                  Create Your Diet Plan
+                </button>
+              </div>
             </div>
-          </div>
+
+            <div className="bg-white dark:bg-gray-800 py-16">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    Why Choose MacroMindAI?
+                  </h2>
+                  <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
+                    Our platform combines cutting-edge AI technology with proven nutrition science
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {features.map((feature, index) => (
+                    <FeatureCard key={index} {...feature} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="py-16">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    What Our Users Say
+                  </h2>
+                </div>
+                <TestimonialCarousel testimonials={testimonials} />
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 py-16">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <AboutSection />
+              </div>
+            </div>
+          </>
         )}
 
         {activeSection === 'generator' && (
