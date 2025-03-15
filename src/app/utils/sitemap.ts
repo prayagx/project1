@@ -1,18 +1,6 @@
 import fs from 'fs';
 import { seoConfig } from '../config';
 
-/**
- * Sitemap utilities for generating SEO files
- */
-const sitemapUtils = {
-  generateSitemap,
-  generateRobotsTxt,
-  generateSEOFiles
-};
-
-// Default export for the module
-export default sitemapUtils;
-
 type UrlObject = {
   url: string;
   lastmod?: string;
@@ -22,65 +10,64 @@ type UrlObject = {
 
 /**
  * Generate a sitemap.xml file for the website
- * @param baseUrl - The base URL of the website
- * @param pages - Array of page paths relative to the baseUrl
- * @param outputPath - Path to output the sitemap file
  */
-export async function generateSitemap(
+function generateSitemap(
   baseUrl: string = seoConfig.siteUrl,
   outputPath: string = './public/sitemap.xml'
 ): Promise<void> {
-  // Main static pages
-  const staticPages: UrlObject[] = [
-    { url: '/', priority: 1.0, changefreq: 'weekly' },
-    { url: '/#generator', priority: 0.9, changefreq: 'daily' },
-    { url: '/#features', priority: 0.8, changefreq: 'monthly' },
-    { url: '/#testimonials', priority: 0.7, changefreq: 'monthly' },
-    { url: '/#about', priority: 0.6, changefreq: 'monthly' },
-    { url: '/#contact', priority: 0.6, changefreq: 'monthly' },
-    { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
-    { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
-  ];
-
-  // Current date for lastmod
-  const currentDate = new Date().toISOString().split('T')[0];
-
-  // Create sitemap XML content
-  let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+  return new Promise((resolve, reject) => {
+    try {
+      // Main static pages
+      const staticPages: UrlObject[] = [
+        { url: '/', priority: 1.0, changefreq: 'weekly' },
+        { url: '/#generator', priority: 0.9, changefreq: 'daily' },
+        { url: '/#features', priority: 0.8, changefreq: 'monthly' },
+        { url: '/#testimonials', priority: 0.7, changefreq: 'monthly' },
+        { url: '/#about', priority: 0.6, changefreq: 'monthly' },
+        { url: '/#contact', priority: 0.6, changefreq: 'monthly' },
+        { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
+        { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
+      ];
+    
+      // Current date for lastmod
+      const currentDate = new Date().toISOString().split('T')[0];
+    
+      // Create sitemap XML content
+      let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-
-  // Add each URL to the sitemap
-  staticPages.forEach((page) => {
-    sitemapContent += `  <url>\n`;
-    sitemapContent += `    <loc>${baseUrl}${page.url}</loc>\n`;
-    sitemapContent += `    <lastmod>${currentDate}</lastmod>\n`;
-    if (page.changefreq) {
-      sitemapContent += `    <changefreq>${page.changefreq}</changefreq>\n`;
+    
+      // Add each URL to the sitemap
+      staticPages.forEach((page) => {
+        sitemapContent += `  <url>\n`;
+        sitemapContent += `    <loc>${baseUrl}${page.url}</loc>\n`;
+        sitemapContent += `    <lastmod>${currentDate}</lastmod>\n`;
+        if (page.changefreq) {
+          sitemapContent += `    <changefreq>${page.changefreq}</changefreq>\n`;
+        }
+        if (page.priority !== undefined) {
+          sitemapContent += `    <priority>${page.priority.toFixed(1)}</priority>\n`;
+        }
+        sitemapContent += `  </url>\n`;
+      });
+    
+      // Close sitemap
+      sitemapContent += `</urlset>`;
+    
+      // Write sitemap file
+      fs.writeFileSync(outputPath, sitemapContent);
+      console.log(`Sitemap generated at ${outputPath}`);
+      resolve();
+    } catch (err) {
+      console.error('Error writing sitemap:', err);
+      reject(err);
     }
-    if (page.priority !== undefined) {
-      sitemapContent += `    <priority>${page.priority.toFixed(1)}</priority>\n`;
-    }
-    sitemapContent += `  </url>\n`;
   });
-
-  // Close sitemap
-  sitemapContent += `</urlset>`;
-
-  // Write sitemap file
-  try {
-    fs.writeFileSync(outputPath, sitemapContent);
-    console.log(`Sitemap generated at ${outputPath}`);
-  } catch (err) {
-    console.error('Error writing sitemap:', err);
-  }
 }
 
 /**
  * Generate a robots.txt file for the website
- * @param baseUrl - The base URL of the website
- * @param outputPath - Path to output the robots.txt file
  */
-export function generateRobotsTxt(
+function generateRobotsTxt(
   baseUrl: string = seoConfig.siteUrl,
   outputPath: string = './public/robots.txt'
 ): void {
@@ -102,7 +89,16 @@ Sitemap: ${baseUrl}/sitemap.xml
 /**
  * Generate sitemap and robots.txt files
  */
-export function generateSEOFiles(): void {
+function generateSEOFiles(): void {
   generateSitemap();
   generateRobotsTxt();
-} 
+}
+
+const sitemapUtils = {
+  generateSitemap,
+  generateRobotsTxt,
+  generateSEOFiles
+};
+
+export { generateSitemap, generateRobotsTxt, generateSEOFiles };
+export default sitemapUtils; 
