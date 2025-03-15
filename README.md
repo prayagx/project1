@@ -1,6 +1,6 @@
 # 🥗 MacroMindAI - Your AI-Powered Nutrition Companion
 
-> **Note:** This project uses Next.js App Router. The legacy Pages Router files are kept for reference only.
+> **Note:** This project uses Next.js App Router. Legacy Pages Router files have been moved to `src/pages/_legacy` to avoid conflicts.
 
 <div align="center">
 
