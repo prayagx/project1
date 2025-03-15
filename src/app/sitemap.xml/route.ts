@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import sitemapUtils from '../utils/sitemap';
 import { seoConfig } from '../config';
 
+// Add revalidation setting for static export
+export const revalidate = 1;
+
 export async function GET() {
   try {
     // Generate the sitemap content

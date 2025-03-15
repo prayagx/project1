@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { seoConfig } from '../config';
 
+// Add revalidation setting for static export
+export const revalidate = 1;
+
 export async function GET() {
   const content = `# https://www.robotstxt.org/robotstxt.html
 User-agent: *
