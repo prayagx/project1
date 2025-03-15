@@ -4,18 +4,6 @@ const nextConfig = {
   output: 'export',
   images: {
     unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'randomuser.me',
-        pathname: '**',
-      },
-    ],
   },
   // Disable the telemetry to avoid issues
   distDir: process.env.BUILD_DIR || '.next',
@@ -36,16 +24,9 @@ const nextConfig = {
   experimental: {
     // Optimize package imports (stable in Next.js 15)
     optimizePackageImports: ['@heroicons/react', '@headlessui/react', 'framer-motion'],
-    // Enable Turbopack (now stable in Next.js 15)
-    turbo: {
-      resolveAlias: {
-        // Handle common module resolution issues
-        '@': './src',
-      },
-    },
-    // Server Actions enhanced security
-    serverActions: {
-      bodySizeLimit: '2mb', // Limit request size for safety
+    // Handle common module resolution issues
+    resolveAlias: {
+      '@': './src',
     },
   },
   // Improved webpack configuration for compatibility
