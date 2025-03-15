@@ -100,6 +100,50 @@ const testimonials: Testimonial[] = [
     goal: "Athletic Performance",
     achievement: "Completed first marathon",
     rating: 4
+  },
+  {
+    id: 9,
+    name: "Alexandra Reyes",
+    image: "/images/testimonials/testimonial-9.jpg",
+    age: 29,
+    location: "Miami, FL",
+    text: "I struggled with postpartum nutrition and finding time to eat healthy with a newborn. MacroMindAI provided quick, nutritious meal ideas perfect for busy moms. I got my energy back and feel like myself again while still having time for my baby.",
+    goal: "Postpartum Recovery",
+    achievement: "Regained energy while nurturing newborn",
+    rating: 5
+  },
+  {
+    id: 10,
+    name: "James Wilson",
+    image: "/images/testimonials/testimonial-10.jpg",
+    age: 56,
+    location: "Phoenix, AZ",
+    text: "After turning 55, I noticed my metabolism slowing down drastically. The age-appropriate nutrition plan from MacroMindAI helped me adapt my eating patterns with meals that boost metabolism and maintain muscle mass. I feel decades younger!",
+    goal: "Anti-Aging Nutrition",
+    achievement: "Increased energy and maintained muscle",
+    rating: 4
+  },
+  {
+    id: 11,
+    name: "Olivia Martinez",
+    image: "/images/testimonials/testimonial-11.jpg",
+    age: 24,
+    location: "Boston, MA",
+    text: "As a college student on a tight budget, I thought eating healthy was impossible. MacroMindAI created affordable meal plans with simple ingredients that I could actually manage. My focus has improved, and I no longer crash during late-night study sessions!",
+    goal: "Budget-Friendly Nutrition",
+    achievement: "Saved money while improving academic performance",
+    rating: 5
+  },
+  {
+    id: 12,
+    name: "Thomas Lee",
+    image: "/images/testimonials/testimonial-12.jpg",
+    age: 41,
+    location: "Minneapolis, MN",
+    text: "Working rotating shifts at the hospital made regular eating patterns impossible. MacroMindAI adapted to my unpredictable schedule with flexible meal timing options. My energy is consistent regardless of whether I'm on day or night shift now.",
+    goal: "Shift Work Nutrition",
+    achievement: "Stabilized energy across irregular schedules",
+    rating: 5
   }
 ];
 

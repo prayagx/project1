@@ -10,13 +10,29 @@ export interface NutritionInfo {
   carbohydrates_total_g: number;
 }
 
+export interface DietType {
+  name: string;
+  value: string;
+  protein: number; // percentage
+  carbs: number; // percentage
+  fat: number; // percentage
+}
+
+export const dietTypes: DietType[] = [
+  { name: "Balanced", value: "balanced", protein: 30, carbs: 40, fat: 30 },
+  { name: "High Protein", value: "high-protein", protein: 40, carbs: 30, fat: 30 },
+  { name: "Low Carb", value: "low-carb", protein: 35, carbs: 25, fat: 40 },
+  { name: "Keto", value: "keto", protein: 25, carbs: 5, fat: 70 },
+  { name: "Vegetarian", value: "vegetarian", protein: 25, carbs: 50, fat: 25 },
+  { name: "Vegan", value: "vegan", protein: 20, carbs: 60, fat: 20 },
+  { name: "Paleo", value: "paleo", protein: 35, carbs: 25, fat: 40 },
+  { name: "Mediterranean", value: "mediterranean", protein: 25, carbs: 50, fat: 25 }
+];
+
 export async function getNutritionInfo(query: string): Promise<NutritionInfo[]> {
   try {
-    const response = await fetch(`${BASE_URL}/nutrition?query=${encodeURIComponent(query)}`, {
-      headers: {
-        'X-Api-Key': API_KEY,
-      },
-    });
+    // Use our server API route instead of direct API call
+    const response = await fetch(`/api/nutrition?query=${encodeURIComponent(query)}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch nutrition data');
@@ -73,32 +89,97 @@ export function generateDietPlan(
   let fatCalories;
   let carbCalories;
   
-  // Adjust macros based on dietary preferences
-  if (dietaryPreferences.includes('keto')) {
-    // Keto: 75% fat, 20% protein, 5% carbs
-    fatCalories = targetCalories * 0.75;
-    carbCalories = targetCalories * 0.05;
-  } else if (dietaryPreferences.includes('low-carb')) {
-    // Low-carb: 60% fat, 30% protein, 10% carbs
-    fatCalories = targetCalories * 0.6;
-    carbCalories = targetCalories * 0.1;
-  } else if (dietaryPreferences.includes('paleo')) {
-    // Paleo: 40% fat, 30% protein, 30% carbs
-    fatCalories = targetCalories * 0.4;
-    carbCalories = targetCalories * 0.3;
-  } else if (dietaryPreferences.includes('mediterranean')) {
-    // Mediterranean: 35% fat, 20% protein, 45% carbs
-    fatCalories = targetCalories * 0.35;
-    carbCalories = targetCalories * 0.45;
-  } else if (dietaryPreferences.includes('vegan') || dietaryPreferences.includes('vegetarian')) {
-    // Plant-based: 25% fat, 25% protein, 50% carbs
-    fatCalories = targetCalories * 0.25;
-    carbCalories = targetCalories * 0.5;
+  // Improved handling of multiple dietary preferences
+  // Use a scoring system to blend macros when multiple preferences are selected
+  
+  // Default macro ratios (protein is fixed based on weight)
+  let fatRatio = 0.3; // 30% fat
+  let carbRatio = 0.4; // 40% carbs
+  
+  // Process diet-specific macro adjustments
+  // Count how many diet types are selected to properly weight their influence
+  const dietTypes = [];
+  
+  if (dietaryPreferences.includes('keto')) dietTypes.push('keto');
+  if (dietaryPreferences.includes('low-carb')) dietTypes.push('low-carb');
+  if (dietaryPreferences.includes('paleo')) dietTypes.push('paleo');
+  if (dietaryPreferences.includes('mediterranean')) dietTypes.push('mediterranean');
+  if (dietaryPreferences.includes('vegetarian') || dietaryPreferences.includes('vegan')) dietTypes.push('plant-based');
+  
+  if (dietTypes.length === 0) {
+    // Standard plan
+    fatRatio = 0.3;
+    carbRatio = 0.4;
+  } else if (dietTypes.length === 1) {
+    // Single diet type
+    switch (dietTypes[0]) {
+      case 'keto':
+        fatRatio = 0.75;
+        carbRatio = 0.05;
+        break;
+      case 'low-carb':
+        fatRatio = 0.6;
+        carbRatio = 0.1;
+        break;
+      case 'paleo':
+        fatRatio = 0.4;
+        carbRatio = 0.3;
+        break;
+      case 'mediterranean':
+        fatRatio = 0.35;
+        carbRatio = 0.45;
+        break;
+      case 'plant-based':
+        fatRatio = 0.25;
+        carbRatio = 0.5;
+        break;
+    }
   } else {
-    // Standard: 30% fat, 30% protein, 40% carbs
-    fatCalories = targetCalories * 0.3;
-    carbCalories = targetCalories - proteinCalories - fatCalories;
+    // Multiple diet types - calculate weighted average
+    let totalFatRatio = 0;
+    let totalCarbRatio = 0;
+    
+    for (const diet of dietTypes) {
+      switch (diet) {
+        case 'keto':
+          totalFatRatio += 0.75;
+          totalCarbRatio += 0.05;
+          break;
+        case 'low-carb':
+          totalFatRatio += 0.6;
+          totalCarbRatio += 0.1;
+          break;
+        case 'paleo':
+          totalFatRatio += 0.4;
+          totalCarbRatio += 0.3;
+          break;
+        case 'mediterranean':
+          totalFatRatio += 0.35;
+          totalCarbRatio += 0.45;
+          break;
+        case 'plant-based':
+          totalFatRatio += 0.25;
+          totalCarbRatio += 0.5;
+          break;
+      }
+    }
+    
+    // Calculate average ratios
+    fatRatio = totalFatRatio / dietTypes.length;
+    carbRatio = totalCarbRatio / dietTypes.length;
   }
+  
+  // Calculate actual calorie values based on ratios
+  fatCalories = targetCalories * fatRatio;
+  carbCalories = targetCalories * carbRatio;
+  
+  // Ensure protein is prioritized
+  const remainingCalories = targetCalories - proteinCalories;
+  const adjustmentFactor = remainingCalories / (fatCalories + carbCalories);
+  
+  // Adjust fat and carbs to fit the remaining calories after protein
+  fatCalories = fatCalories * adjustmentFactor;
+  carbCalories = carbCalories * adjustmentFactor;
 
   const fat = fatCalories / 9;
   const carbs = carbCalories / 4;

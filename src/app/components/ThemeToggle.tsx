@@ -4,49 +4,62 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  currentTheme?: string;
+  onChange?: () => void;
+}
+
+export function ThemeToggle({ currentTheme, onChange }: ThemeToggleProps = {}) {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  
+  // Get the effective theme from props or context
+  const effectiveTheme = currentTheme || theme;
 
   // After mounting, we have access to the theme
   useEffect(() => setMounted(true), []);
 
+  const toggleTheme = () => {
+    const newTheme = effectiveTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    if (onChange) onChange();
+  };
+
   if (!mounted) {
     return (
       <div 
-        className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-dark-card border border-gray-300 dark:border-dark-border flex items-center justify-center"
+        className="w-11 h-11 rounded-full glass-effect flex items-center justify-center shadow-sm"
         aria-label="Loading theme toggle"
       >
-        <div className="w-5 h-5 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 rounded-full animate-pulse" />
+        <div className="w-6 h-6 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 rounded-full animate-pulse" />
       </div>
     );
   }
 
   return (
     <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-dark-card border border-gray-300 dark:border-dark-border
-                 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-dark-bg transition-all duration-300"
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.92 }}
+      onClick={toggleTheme}
+      className="w-11 h-11 rounded-full glass-effect flex items-center justify-center hover:bg-gray-300/20 dark:hover:bg-white/10 transition-all duration-300 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md"
+      aria-label={`Switch to ${effectiveTheme === 'dark' ? 'light' : 'dark'} theme`}
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          key={theme}
+          key={effectiveTheme}
           initial={{ y: -20, opacity: 0, rotate: -90 }}
           animate={{ y: 0, opacity: 1, rotate: 0 }}
           exit={{ y: 20, opacity: 0, rotate: 90 }}
           transition={{ duration: 0.3 }}
         >
-          {theme === 'dark' ? (
+          {effectiveTheme === 'dark' ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5 text-dark-text"
+              className="w-6 h-6 text-yellow-400"
             >
               <path
                 strokeLinecap="round"
@@ -61,7 +74,7 @@ export function ThemeToggle() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5 text-gray-900"
+              className="w-6 h-6 text-indigo-700"
             >
               <path
                 strokeLinecap="round"

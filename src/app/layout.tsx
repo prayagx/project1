@@ -23,9 +23,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${poppins.variable}`}>
-      <body className={`${inter.className} antialiased transition-colors duration-300 bg-gray-50 dark:bg-dark-bg min-h-screen`}>
+      <body className={`${inter.className} antialiased bg-white dark:bg-gray-900 transition-colors duration-300 min-h-screen`}>
         <Providers>
-          <div className="transition-all duration-300">
+          <div className="w-full min-h-screen transition-all duration-300">
             {children}
           </div>
         </Providers>

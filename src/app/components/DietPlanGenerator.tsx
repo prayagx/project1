@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import ProgressSteps from './ui/ProgressSteps';
 import MealPlanDisplay from './MealPlanDisplay';
-import { generateDietPlan } from '../services/nutritionService';
+import ErrorMessage from './ui/ErrorMessage';
+import { generateDietPlan, dietTypes, DietType } from '../services/nutritionService';
 import { 
   trackFormStep, 
   trackDietPlanGeneration,
@@ -65,9 +66,16 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
   });
   const [error, setError] = useState('');
   const [internalLoading, setInternalLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [planKey, setPlanKey] = useState(Date.now()); // Add key for forcing re-renders
   
   // Use external loading state if provided, otherwise use internal
   const loading = externalLoading !== undefined ? externalLoading : internalLoading;
+
+  // Handle client-side mounting
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Track step changes for analytics
   useEffect(() => {
@@ -78,6 +86,12 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Special handling for plan duration changes to force refresh
+    if (name === 'planDuration' && value !== formData.planDuration) {
+      setPlanKey(Date.now());
+    }
+    
     setFormData({
       ...formData,
       [name]: value,
@@ -128,7 +142,10 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
       return;
     }
 
+    // Reset any previous errors
+    setError('');
     setInternalLoading(true);
+    
     try {
       // Generate diet plan
       const dietPlan = generateDietPlan(
@@ -164,9 +181,12 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
       
       // Move to next step
       setCurrentStep(4);
+      
+      // Force refresh of meal plan component
+      setPlanKey(Date.now());
     } catch (error) {
       setError('Failed to generate diet plan. Please try again.');
-      console.error(error);
+      console.error('Diet plan generation error:', error);
       // Track error for analytics
       trackEvent(
         'generation_error',
@@ -176,6 +196,41 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
     } finally {
       setInternalLoading(false);
     }
+  };
+
+  // Function to handle going back to previous step
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  // Function to handle plan duration change specifically
+  const handlePlanDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDuration = e.target.value as 'day' | 'week';
+    
+    // Force a complete refresh when changing plan duration
+    setPlanKey(Date.now());
+    
+    setFormData({
+      ...formData,
+      planDuration: newDuration
+    });
+    
+    // If we're already on the results step, update results too
+    if (currentStep === 4) {
+      setResults({
+        ...results,
+        planDuration: newDuration
+      });
+    }
+  };
+
+  // Function to reset and start over
+  const handleReset = () => {
+    setCurrentStep(1);
+    setError('');
+    setPlanKey(Date.now());
   };
 
   const renderStep = () => {
@@ -315,38 +370,17 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
                   Select Your Dietary Preferences
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                  {['Standard', 'Vegetarian', 'Vegan', 'Keto', 'Low-carb', 'Paleo', 'Mediterranean', 'Gluten-free'].map((diet) => (
-                    <label key={diet} className="flex items-center space-x-2 sm:space-x-3">
+                  {dietTypes.map((diet) => (
+                    <label key={diet.value} className="flex items-center space-x-2 sm:space-x-3">
                       <input
                         type="checkbox"
                         name="dietaryPreferences"
-                        value={diet.toLowerCase()}
-                        checked={formData.dietaryPreferences.includes(diet.toLowerCase())}
+                        value={diet.value}
+                        checked={formData.dietaryPreferences.includes(diet.value)}
                         onChange={handleCheckboxChange}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                       />
-                      <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300">{diet}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Cuisine Preferences
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                  {['Indian', 'North Indian', 'South Indian', 'Asian', 'Chinese', 'Japanese', 'Thai', 'Mexican', 'Italian', 'Middle Eastern'].map((cuisine) => (
-                    <label key={cuisine} className="flex items-center space-x-2 sm:space-x-3">
-                      <input
-                        type="checkbox"
-                        name="dietaryPreferences"
-                        value={cuisine.toLowerCase().replace(' ', '-')}
-                        checked={formData.dietaryPreferences.includes(cuisine.toLowerCase().replace(' ', '-'))}
-                        onChange={handleCheckboxChange}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-                      />
-                      <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300">{cuisine}</span>
+                      <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300">{diet.name}</span>
                     </label>
                   ))}
                 </div>
@@ -396,21 +430,24 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
                 </div>
                 
                 <div>
-                  <label htmlFor="planDuration" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Plan Duration
                   </label>
                   <select
                     id="planDuration"
                     name="planDuration"
                     value={formData.planDuration}
-                    onChange={handleInputChange}
+                    onChange={handlePlanDurationChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 
                             focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm
                             dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   >
-                    <option value="day">Single Day</option>
-                    <option value="week">Full Week</option>
+                    <option value="day">Single Day Plan</option>
+                    <option value="week">Full Week Plan</option>
                   </select>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Weekly plans provide variety across 7 days.
+                  </p>
                 </div>
               </div>
             </div>
@@ -419,48 +456,57 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
       case 4:
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Your Personalized {results.planDuration === 'week' ? 'Weekly' : 'Daily'} Meal Plan
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                Your Personalized Meal Plan
               </h3>
-              <button
-                onClick={generatePlan}
-                className="px-4 py-2 bg-secondary-500 hover:bg-secondary-600 text-white rounded-lg transition duration-200 flex items-center text-sm"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Regenerate Plan
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleReset}
+                  className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors"
+                >
+                  Start Over
+                </button>
+                <select
+                  value={results.planDuration}
+                  onChange={(e) => {
+                    setResults({
+                      ...results,
+                      planDuration: e.target.value as 'day' | 'week'
+                    });
+                    setPlanKey(Date.now());
+                  }}
+                  className="text-sm px-3 py-1 border border-gray-300 rounded-md shadow-sm
+                          focus:outline-none focus:ring-blue-500 focus:border-blue-500
+                          dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value="day">Daily Plan</option>
+                  <option value="week">Weekly Plan</option>
+                </select>
+              </div>
             </div>
-            <MealPlanDisplay 
-              targetCalories={results.targetCalories}
-              protein={results.protein}
-              carbs={results.carbs}
-              fat={results.fat}
-              mealFrequency={results.mealFrequency}
-              dietaryPreferences={results.dietaryPreferences}
-              allergies={results.allergies}
-              planDuration={results.planDuration}
-            />
+
+            {error && (
+              <ErrorMessage 
+                message="Failed to generate meal plan"
+                details={error}
+                severity="error"
+                onRetry={generatePlan}
+                retryLabel="Try Again"
+              />
+            )}
             
-            <div className="flex justify-between mt-6">
-              <button
-                onClick={() => setCurrentStep(3)}
-                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition duration-200"
-              >
-                Back
-              </button>
-              
-              <button
-                onClick={handlePrintPlan}
-                className="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition duration-200 flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                Print Plan
-              </button>
+            <div key={planKey}>
+              <MealPlanDisplay
+                targetCalories={results.targetCalories}
+                protein={results.protein}
+                carbs={results.carbs}
+                fat={results.fat}
+                mealFrequency={results.mealFrequency}
+                dietaryPreferences={results.dietaryPreferences}
+                allergies={results.allergies}
+                planDuration={results.planDuration}
+              />
             </div>
           </div>
         );
@@ -469,61 +515,54 @@ export default function DietPlanGenerator({ onSubmit, loading: externalLoading }
     }
   };
 
-  // Update case 4 in renderStep to track print events
-  const handlePrintPlan = () => {
-    trackPlanExport('print');
-    window.print();
-  };
+  // Don't render until client-side hydration is complete
+  if (!isClient && currentStep === 4) {
+    return (
+      <div className="animate-pulse flex flex-col space-y-4 p-4">
+        <div className="h-4 bg-gray-200 rounded-md dark:bg-gray-700 w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded-md dark:bg-gray-700 w-1/2"></div>
+        <div className="h-32 bg-gray-200 rounded-md dark:bg-gray-700 w-full"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-white">
-        {currentStep < 4 ? 'Generate Your Custom Diet Plan' : 'Your Personalized Diet Plan'}
-      </h2>
-
-      <div className="mb-8">
-        <ProgressSteps steps={4} currentStep={currentStep} />
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-        {/* Step Content */}
-        {renderStep()}
-
-        {/* Navigation */}
-        {currentStep < 4 && (
-          <div className="flex justify-between mt-8">
-            <button
-              type="button"
-              onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-              disabled={currentStep === 1 || loading}
-              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 
-                     text-gray-800 dark:text-white rounded-lg transition duration-200
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Back
-            </button>
-            <button
-              type={currentStep === 3 ? 'submit' : 'button'}
-              onClick={currentStep < 3 ? () => setCurrentStep(currentStep + 1) : undefined}
-              disabled={loading}
-              className="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg 
-                     transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </span>
-              ) : (
-                currentStep < 3 ? 'Next' : 'Generate Plan'
-              )}
-            </button>
+    <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div className="p-6">
+        <ProgressSteps
+          steps={['Personal Info', 'Body Stats', 'Preferences', 'Your Plan']}
+          currentStep={currentStep}
+        />
+        
+        <form onSubmit={handleSubmit} className="mt-8">
+          {renderStep()}
+          
+          <div className="mt-8 flex justify-between">
+            {currentStep > 1 && (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 
+                        bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                        dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                Back
+              </button>
+            )}
+            
+            {currentStep < 4 && (
+              <button
+                type="submit"
+                className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
+                        bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                        dark:bg-blue-500 dark:hover:bg-blue-600 ${currentStep === 1 ? "ml-auto" : ""}`}
+              >
+                {currentStep === 3 ? 'Generate Plan' : 'Next'}
+              </button>
+            )}
           </div>
-        )}
-      </form>
+        </form>
+      </div>
     </div>
   );
 } 

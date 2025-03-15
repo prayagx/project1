@@ -49,10 +49,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>('generator');
+  const [activeSection, setActiveSection] = useState<string>('home');
   const [dietPlan, setDietPlan] = useState<any>(null);
   const [planDuration, setPlanDuration] = useState<'day' | 'week'>('day');
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [paramsProcessed, setParamsProcessed] = useState(false);
   
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,6 +65,75 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+  
+  // Parse URL parameters when component mounts
+  useEffect(() => {
+    if (mounted && searchParams && !paramsProcessed) {
+      const weight = searchParams.get('weight');
+      const height = searchParams.get('height');
+      const age = searchParams.get('age');
+      const gender = searchParams.get('gender');
+      const activityLevel = searchParams.get('activityLevel');
+      const goal = searchParams.get('goal');
+      const duration = searchParams.get('planDuration');
+      const preferences = searchParams.get('dietaryPreferences');
+      
+      // Update form data with URL parameters if they exist
+      const newFormData = { ...formData };
+      
+      if (weight) newFormData.weight = weight;
+      if (height) newFormData.height = height;
+      if (age) newFormData.age = age;
+      if (gender && (gender === 'male' || gender === 'female')) newFormData.gender = gender;
+      if (activityLevel && ['sedentary', 'light', 'moderate', 'active', 'very_active'].includes(activityLevel)) {
+        newFormData.activityLevel = activityLevel as 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+      }
+      if (goal && ['lose', 'maintain', 'gain'].includes(goal)) {
+        newFormData.goal = goal as 'lose' | 'maintain' | 'gain';
+      }
+      
+      setFormData(newFormData);
+      
+      // Set plan duration if provided
+      if (duration && (duration === 'day' || duration === 'week')) {
+        setPlanDuration(duration);
+      }
+      
+      // Set dietary preferences if provided
+      if (preferences) {
+        try {
+          const preferencesArray = preferences.split(',');
+          setDietaryPreferences(preferencesArray);
+        } catch (error) {
+          console.error('Error parsing dietary preferences:', error);
+        }
+      }
+      
+      // If we have essential parameters (weight, height, age), automatically generate the plan
+      if (weight && height && age) {
+        const dietPlanFormData: DietPlanFormData = {
+          weight: weight,
+          height: height,
+          age: age,
+          gender: (gender === 'male' || gender === 'female') ? gender : 'male',
+          activityLevel: (activityLevel && ['sedentary', 'light', 'moderate', 'active', 'very_active'].includes(activityLevel)) 
+            ? activityLevel as 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active'
+            : 'moderate',
+          goal: (goal && ['lose', 'maintain', 'gain'].includes(goal))
+            ? goal as 'lose' | 'maintain' | 'gain'
+            : 'maintain',
+          dietaryPreferences: preferences ? preferences.split(',') : [],
+          allergies: [],
+          planDuration: (duration === 'day' || duration === 'week') ? duration : 'day'
+        };
+        
+        // Generate plan with URL parameters
+        handleSubmit(dietPlanFormData);
+      }
+      
+      setParamsProcessed(true);
+    }
+  }, [mounted, searchParams, paramsProcessed]);
 
   // Track section changes for analytics
   useEffect(() => {
@@ -71,11 +144,15 @@ export default function Home() {
 
   // Load section from URL hash on initial load
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash && ['generator', 'features', 'testimonials', 'about'].includes(hash)) {
-      setActiveSection(hash);
+    if (mounted) {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['home', 'generator', 'features', 'testimonials', 'about'].includes(hash)) {
+        setActiveSection(hash);
+      } else if (!hash) {
+        setActiveSection('home');
+      }
     }
-  }, []);
+  }, [mounted]);
 
   // Function to handle section changes
   const handleSectionChange = (section: string) => {
@@ -85,6 +162,11 @@ export default function Home() {
   };
 
   const handleSubmit = async (formData: DietPlanFormData) => {
+    if (!formData.weight || !formData.height || !formData.age) {
+      alert('Please fill in all required fields: weight, height, and age.');
+      return;
+    }
+    
     setLoading(true);
     try {
       const plan = await generateDietPlan(
@@ -94,18 +176,28 @@ export default function Home() {
         formData.gender,
         formData.activityLevel,
         formData.goal,
-        formData.dietaryPreferences || [],
-        formData.planDuration
+        formData.dietaryPreferences || dietaryPreferences,
+        formData.planDuration || planDuration
       );
+      
       setDietPlan({
         ...plan,
-        allergies: formData.allergies || [],
-        planDuration: formData.planDuration
+        allergies: formData.allergies || allergies,
+        planDuration: formData.planDuration || planDuration
       });
+      
+      // Scroll to generator section when plan is loaded
+      const generatorElement = document.getElementById('generator');
+      if (generatorElement) {
+        generatorElement.scrollIntoView({ behavior: 'smooth' });
+      }
+      
       setActiveSection('generator');
+      setInitialDataLoaded(true);
     } catch (error) {
       console.error('Error generating diet plan:', error);
-      alert('Failed to generate diet plan. Please try again.');
+      // Use a more user-friendly error approach
+      alert('Failed to generate diet plan. Please check your inputs and try again.');
     } finally {
       setLoading(false);
     }
@@ -211,7 +303,7 @@ export default function Home() {
         {
           icon: (
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           ),
@@ -276,365 +368,328 @@ export default function Home() {
     }
   };
 
+  // Render the component only when mounted to prevent hydration errors
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-white to-gray-100 dark:from-amoled-black dark:to-amoled-dark">
+        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <SEO {...getSeoProps()} />
-      <main className="min-h-screen bg-gray-50 dark:bg-dark-bg">
-        <Navbar activeSection={activeSection} setActiveSection={setActiveSection} />
-        
-        <div className="pt-20">
-          {activeSection === 'home' && (
-            <>
-              <div className="text-center py-20">
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                  Personalized Nutrition,
-                  <br /> <span className="text-blue-600 dark:text-blue-400">Powered by AI</span>
-                </h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4">
-                  Create a customized diet plan tailored to your body, goals, and food preferences
-                  in just a few clicks.
-                </p>
-                <div className="mt-8">
-                  <button
-                    onClick={() => handleSectionChange('generator')}
-                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg mr-4"
-                  >
-                    Generate Plan
-                  </button>
-                  <button
-                    onClick={() => handleSectionChange('features')}
-                    className="px-8 py-3 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-500 rounded-lg"
-                  >
-                    Learn More
-                  </button>
-                </div>
-              </div>
-
-              <div id="features" className="bg-white dark:bg-dark-card py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="text-center mb-12">
-                    <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
-                      Why Choose MacroMindAI?
-                    </h2>
-                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                      Our AI-powered platform combines cutting-edge technology with evidence-based nutritional science to 
-                      create truly personalized meal plans that adapt to your unique needs and preferences.
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-20">
-                    {featuresData.map((category, categoryIndex) => (
-                      <div key={categoryIndex}>
-                        <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">
-                          {category.category}
-                        </h3>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                          {category.items.slice(0, 4).map((feature, featureIndex) => (
-                            <div 
-                              key={featureIndex}
-                              className="group relative bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg
-                                      transition-all duration-300 hover:shadow-xl hover:-translate-y-1
-                                      hover:ring-2 hover:ring-blue-500/20 dark:hover:ring-blue-400/20"
-                            >
-                              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg
-                                            flex items-center justify-center text-blue-600 dark:text-blue-300
-                                            mb-4 transform transition-transform duration-300
-                                            group-hover:scale-110 group-hover:rotate-3">
-                                {feature.icon}
-                              </div>
-                              
-                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                {feature.title}
-                              </h4>
-                              
-                              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                                {feature.description}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-16 text-center">
-                    <button
-                      onClick={() => handleSectionChange('features')}
-                      className="px-6 py-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 
-                               text-blue-700 dark:text-blue-300 rounded-lg font-medium
-                               transition-colors duration-300"
-                    >
-                      Explore All Features
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div id="testimonials" className="bg-gray-50 dark:bg-gray-900 py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="text-center mb-12">
-                    <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
-                      Success Stories
-                    </h2>
-                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                      Join thousands of users who have transformed their nutrition and achieved their health goals with MacroMindAI.
-                    </p>
-                  </div>
-                  
-                  <TestimonialCarousel testimonials={testimonials} />
-                  
-                  {/* Stats section */}
-                  <div className="mt-16 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                      {/* Active Users */}
-                      <div className="text-center">
-                        <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">15k+</div>
-                        <div className="mt-2 text-gray-600 dark:text-gray-300">Active Users</div>
-                      </div>
-                      
-                      {/* Average Rating */}
-                      <div className="text-center">
-                        <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">4.8</div>
-                        <div className="mt-2 text-gray-600 dark:text-gray-300">Average Rating</div>
-                      </div>
-                      
-                      {/* Success Rate */}
-                      <div className="text-center">
-                        <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">92%</div>
-                        <div className="mt-2 text-gray-600 dark:text-gray-300">Success Rate</div>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-8 text-center">
-                      <button
-                        onClick={() => handleSectionChange('generator')}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 
-                                 text-white rounded-lg font-medium transition-colors duration-300"
-                      >
-                        Create Your Plan Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeSection === 'features' && (
-            <div id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  Key Features
-                </h2>
-                <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Explore the powerful features that make MacroMindAI the best choice for your nutrition journey. 
-                  Our AI-powered platform combines cutting-edge technology with evidence-based nutritional science.
-                </p>
-              </div>
+    <main className="bg-white dark:bg-amoled-black min-h-screen flex flex-col">
+      <SEO
+        title={seoConfig.defaultTitle}
+        description={seoConfig.defaultDescription}
+        canonical={seoConfig.siteUrl + pathname}
+      />
+      
+      <Navbar 
+        activeSection={activeSection} 
+        onSectionChange={handleSectionChange} 
+        theme={theme} 
+        onThemeChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
+      />
+      
+      {/* Hero Section with generator */}
+      <section id="home" className={`pt-24 pb-16 px-4 ${activeSection === 'home' ? 'block' : 'hidden'}`}>
+        <div className="section-container">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-10">
+            <div className="lg:w-1/2 space-y-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white">
+                <span className="text-gradient">AI-Powered</span> Personalized<br />Diet Plans
+              </h1>
+              <p className="text-lg text-gray-700 dark:text-gray-300">
+                Get a personalized diet plan based on your body metrics, activity level, and goals.
+                Optimize your nutrition with our AI-driven recommendations.
+              </p>
               
-              <div className="space-y-20">
-                {features.map((category, idx) => (
-                  <FeatureCard 
-                    key={idx}
-                    category={category.category}
-                    items={category.items}
-                  />
-                ))}
-              </div>
-              
-              <div className="mt-16 text-center">
-                <button
-                  onClick={() => setActiveSection('generator')}
-                  className="px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-lg font-semibold
-                          transition-colors duration-300 shadow-lg hover:shadow-xl"
+              <div className="flex gap-4">
+                <button 
+                  className="btn btn-primary btn-lg group relative"
+                  onClick={() => handleSectionChange('generator')}
                 >
-                  Try MacroMindAI Now
+                  <span className="absolute inset-0 rounded-full bg-primary-500/30 dark:bg-primary-500/20 blur-md group-hover:blur-xl transition-all duration-300 -z-10 opacity-0 dark:opacity-70 group-hover:opacity-100"></span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Create Diet Plan
+                </button>
+                <button 
+                  className="btn btn-secondary btn-lg group relative"
+                  onClick={() => handleSectionChange('features')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  Learn More
                 </button>
               </div>
             </div>
-          )}
-
-          {activeSection === 'testimonials' && (
-            <div id="testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  Success Stories
-                </h2>
-                <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Real results from real people. Discover how MacroMindAI has helped thousands achieve their nutrition 
-                  and fitness goals with personalized meal plans tailored to their unique needs.
-                </p>
-              </div>
-              
-              <TestimonialCarousel testimonials={testimonials} />
-              
-              <div className="mt-16 bg-gray-50 dark:bg-gray-800 rounded-xl p-8 max-w-3xl mx-auto">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-                  Join Thousands of Satisfied Users
-                </h3>
-                <div className="flex justify-center space-x-6 mb-6">
-                  <div className="text-center">
-                    <p className="text-4xl font-bold text-primary-500">15k+</p>
-                    <p className="text-gray-600 dark:text-gray-300">Active Users</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-4xl font-bold text-primary-500">4.8</p>
-                    <p className="text-gray-600 dark:text-gray-300">Average Rating</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-4xl font-bold text-primary-500">92%</p>
-                    <p className="text-gray-600 dark:text-gray-300">Success Rate</p>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <button
-                    onClick={() => setActiveSection('generator')}
-                    className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium
-                            transition-colors duration-300"
-                  >
-                    Create Your Plan Today
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'generator' && (
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <div className="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 sm:p-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-8">
-                  Generate Your Personalized Diet Plan
-                </h2>
+            
+            <div className="lg:w-1/2">
+              <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-amoled-border bg-white dark:bg-amoled-card">
                 <DietPlanGenerator 
                   onSubmit={handleSubmit} 
-                  loading={loading} 
+                  loading={loading}
                 />
-                
-                {dietPlan && (
-                  <div className="mt-12">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                      Your Personalized Meal Plan
-                    </h3>
-                    <MealPlanDisplay
-                      targetCalories={dietPlan.targetCalories}
-                      protein={dietPlan.macros.protein}
-                      carbs={dietPlan.macros.carbs}
-                      fat={dietPlan.macros.fat}
-                      mealFrequency={dietPlan.mealFrequency}
-                      dietaryPreferences={dietPlan.dietaryPreferences}
-                      allergies={dietPlan.allergies || []}
-                      planDuration={planDuration}
-                    />
-                  </div>
-                )}
               </div>
             </div>
-          )}
-
-          {activeSection === 'about' && (
-            <div id="about" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <AboutSection />
-            </div>
-          )}
-
-          {activeSection === 'contact' && (
-            <div id="contact" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <div className="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 sm:p-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-8">
-                  Contact Us
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Have questions or feedback about MacroMindAI? We'd love to hear from you.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                      Send us a message
-                    </h3>
-                    <form className="space-y-4">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          className="input w-full"
-                          placeholder="Your name"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          className="input w-full"
-                          placeholder="Your email"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Message
-                        </label>
-                        <textarea
-                          id="message"
-                          rows={4}
-                          className="input w-full"
-                          placeholder="Your message"
-                        ></textarea>
-                      </div>
-                      <div>
-                        <button 
-                          type="submit" 
-                          className="btn btn-primary"
-                        >
-                          Send Message
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                      Connect with us
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-500 mr-3">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Email us at</p>
-                          <p className="text-gray-900 dark:text-white">contact@macromindai.com</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-500 mr-3">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Call us at</p>
-                          <p className="text-gray-900 dark:text-white">+1 (555) 123-4567</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Generated Plan Display */}
+      <section id="generator" className={`pt-24 pb-16 px-4 ${activeSection === 'generator' ? 'block' : 'hidden'}`}>
+        <div className="section-container">
+          <h2 className="section-title text-center">
+            Your <span className="text-gradient">Personalized</span> Diet Plan
+          </h2>
+          
+          {loading ? (
+            <div className="flex justify-center items-center min-h-[300px]">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-600 dark:text-gray-400">Generating your personalized diet plan...</p>
               </div>
+            </div>
+          ) : dietPlan ? (
+            <div className="bg-white dark:bg-amoled-card shadow-lg rounded-2xl p-6 border border-gray-100 dark:border-amoled-border">
+              <MealPlanDisplay 
+                targetCalories={dietPlan.targetCalories}
+                protein={dietPlan.macros.protein}
+                carbs={dietPlan.macros.carbs}
+                fat={dietPlan.macros.fat}
+                mealFrequency={dietPlan.mealFrequency}
+                dietaryPreferences={dietPlan.dietaryPreferences}
+                allergies={dietPlan.allergies || []}
+                planDuration={dietPlan.planDuration || planDuration}
+              />
+              
+              <div className="mt-8 flex justify-center gap-4">
+                <ShareButton 
+                  url={window?.location?.href}
+                  title="My Personalized Diet Plan from MacroMindAI"
+                  description={`Check out my personalized meal plan with ${dietPlan.targetCalories} calories per day!`}
+                />
+                <button 
+                  className="btn btn-secondary group relative"
+                  onClick={() => handleSectionChange('home')}
+                >
+                  <span className="absolute inset-0 rounded-full bg-gray-200/20 dark:bg-gray-500/10 blur-md group-hover:blur-xl transition-all duration-300 -z-10 opacity-0 dark:opacity-50 group-hover:opacity-100"></span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                  </svg>
+                  Edit Parameters
+                </button>
+              </div>
+            </div>
+          ) : initialDataLoaded ? (
+            <div className="text-center p-8 bg-red-100 dark:bg-red-900/30 rounded-2xl">
+              <p className="text-red-600 dark:text-red-300">
+                Failed to generate meal plan. Please check your inputs and try again.
+              </p>
+              <button 
+                className="mt-4 btn btn-accent group relative"
+                onClick={() => handleSectionChange('home')}
+              >
+                <span className="absolute inset-0 rounded-full bg-indigo-500/30 dark:bg-indigo-500/20 blur-md group-hover:blur-xl transition-all duration-300 -z-10 opacity-0 dark:opacity-70 group-hover:opacity-100"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
+                Back to Generator
+              </button>
+            </div>
+          ) : (
+            <div className="text-center p-8 glass-effect">
+              <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">
+                Enter your details in the form above to generate a personalized diet plan.
+              </p>
+              <button 
+                className="btn btn-special btn-lg group relative"
+                onClick={() => handleSectionChange('home')}
+              >
+                <span className="absolute inset-0 rounded-full bg-blue-500/30 dark:bg-blue-500/20 blur-md group-hover:blur-xl transition-all duration-300 -z-10 opacity-0 dark:opacity-70 group-hover:opacity-100"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                Go to Generator
+              </button>
             </div>
           )}
         </div>
-        
-        {/* Cookie consent banner */}
-        <CookieConsent />
-      </main>
-    </>
+      </section>
+      
+      {/* Features Section */}
+      <section id="features" className={`pt-24 pb-16 px-4 bg-gray-50 dark:bg-amoled-dark ${activeSection === 'features' ? 'block' : 'hidden'}`}>
+        <Features features={featuresData} />
+      </section>
+      
+      {/* Feature Highlights (Visible on Home) */}
+      <section className={`py-16 px-4 bg-gray-50 dark:bg-amoled-dark ${activeSection === 'home' ? 'block' : 'hidden'}`}>
+        <div className="section-container">
+          <div className="text-center mb-12">
+            <h2 className="section-title">
+              Key <span className="text-gradient">Features</span>
+            </h2>
+            <p className="section-subtitle">
+              Discover what makes MacroMindAI the most advanced nutrition planning tool
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuresData.slice(0, 1).map((category) => (
+              category.items.slice(0, 3).map((feature, index) => (
+                <div key={index} className="feature-card p-6 group hover:scale-105 transition-all duration-300">
+                  <div className="feature-icon-container">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {feature.description}
+                  </p>
+                </div>
+              ))
+            ))}
+          </div>
+          
+          <div className="mt-12 text-center">
+            <button
+              onClick={() => handleSectionChange('features')}
+              className="btn btn-primary btn-lg group relative"
+            >
+              <span className="absolute inset-0 rounded-full bg-primary-500/30 dark:bg-primary-500/20 blur-md group-hover:blur-xl transition-all duration-300 -z-10 opacity-0 dark:opacity-70 group-hover:opacity-100"></span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+              </svg>
+              Explore All Features
+            </button>
+          </div>
+        </div>
+      </section>
+      
+      {/* Testimonials Section */}
+      <section id="testimonials" className={`pt-24 pb-16 px-4 ${activeSection === 'testimonials' ? 'block' : 'hidden'}`}>
+        <TestimonialCarousel testimonials={testimonials} />
+      </section>
+      
+      {/* About Section */}
+      <section id="about" className={`pt-24 pb-16 px-4 bg-gray-50 dark:bg-amoled-dark ${activeSection === 'about' ? 'block' : 'hidden'}`}>
+        <AboutSection />
+      </section>
+      
+      {/* Contact Section */}
+      <section id="contact" className={`pt-24 pb-16 px-4 ${activeSection === 'contact' ? 'block' : 'hidden'}`}>
+        <div className="section-container">
+          <h2 className="section-title text-center">
+            Contact <span className="text-gradient">Us</span>
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="glass-effect p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Get in Touch</h3>
+              <form className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                  <input type="text" id="name" name="name" className="mt-1 input-field" />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                  <input type="email" id="email" name="email" className="mt-1 input-field" />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
+                  <textarea id="message" name="message" rows={4} className="mt-1 input-field"></textarea>
+                </div>
+                <button type="submit" className="btn btn-primary group relative">
+                  <span className="absolute inset-0 rounded-full bg-primary-500/30 dark:bg-primary-500/20 blur-md group-hover:blur-xl transition-all duration-300 -z-10 opacity-0 dark:opacity-70 group-hover:opacity-100"></span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                  Send Message
+                </button>
+              </form>
+            </div>
+            
+            <div className="glass-effect p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Our Information</h3>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Address</h4>
+                    <p className="text-gray-600 dark:text-gray-400">1234 Nutrition Avenue, Health City, HC 12345</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Email</h4>
+                    <p className="text-gray-600 dark:text-gray-400">contact@macromindai.com</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Phone</h4>
+                    <p className="text-gray-600 dark:text-gray-400">(123) 456-7890</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Follow Us</h3>
+                <div className="flex space-x-4">
+                  <a href="#" className="text-primary-500 hover:text-primary-600 transition-colors" aria-label="Facebook">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z" />
+                    </svg>
+                  </a>
+                  <a href="#" className="text-primary-500 hover:text-primary-600 transition-colors" aria-label="Twitter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6.066 9.645c.183 4.04-2.83 8.544-8.164 8.544-1.622 0-3.131-.476-4.402-1.291 1.524.18 3.045-.244 4.252-1.189-1.256-.023-2.317-.854-2.684-1.995.451.086.895.061 1.298-.049-1.381-.278-2.335-1.522-2.304-2.853.388.215.83.344 1.301.359-1.279-.855-1.641-2.544-.889-3.835 1.416 1.738 3.533 2.881 5.92 3.001-.419-1.796.944-3.527 2.799-3.527.825 0 1.572.349 2.096.907.654-.128 1.27-.368 1.824-.697-.215.671-.67 1.233-1.263 1.589.581-.07 1.135-.224 1.649-.453-.384.578-.87 1.084-1.433 1.489z" />
+                    </svg>
+                  </a>
+                  <a href="#" className="text-primary-500 hover:text-primary-600 transition-colors" aria-label="Instagram">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.259-.012 3.668-.07 4.948-.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <footer className="bg-gray-900 dark:bg-amoled-black text-white py-8 px-4 border-t border-gray-800">
+        <div className="section-container flex flex-col md:flex-row justify-between items-center">
+          <div className="mb-4 md:mb-0">
+            <span className="text-xl font-bold text-gradient">MacroMindAI</span>
+            <p className="text-gray-400 mt-2">The intelligent diet planning solution</p>
+          </div>
+          
+          <div className="text-center md:text-right">
+            <p>© {new Date().getFullYear()} MacroMindAI. All rights reserved.</p>
+            <div className="mt-2 space-x-4">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+      
+      <CookieConsent />
+    </main>
   );
 } 

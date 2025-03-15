@@ -5,7 +5,7 @@
 ```ascii
 ███╗   ███╗ █████╗  ██████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗██████╗ ███████╗██╗
 ████╗ ████║██╔══██╗██╔════╝██╔═══██╗████╗ ████║██║████╗  ██║██╔══██╗██╔════╝██║
-██╔████╔██║███████║██║     ██║   ██║██╔████╔██║██║██╔██╗ ██║██║  ██║█████╗  ██║
+██╔████╔██║███████║██║     ██║   ██║██╔████╔██║██║██║██╗ ██║██║  ██║█████╗  ██║
 ██║╚██╔╝██║██╔══██║██║     ██║   ██║██║╚██╔╝██║██║██║╚██╗██║██║  ██║██╔══╝  ██║
 ██║ ╚═╝ ██║██║  ██║╚██████╗╚██████╔╝██║ ╚═╝ ██║██║██║ ╚████║██████╔╝███████╗██║
 ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝
@@ -15,6 +15,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![CaloriesNinjas API](https://img.shields.io/badge/CaloriesNinjas_API-1.0-green)](https://caloriesninjas.com/)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-10.6-purple?logo=framer)](https://www.framer.com/motion/)
 
 </div>
 
@@ -26,15 +27,22 @@
 │  🎯 Personalized Diet Plans                                                 │
 │  🥗 AI-Powered Meal Suggestions                                            │
 │  📊 Detailed Nutritional Information                                       │
-│  🌙 Dark Mode Support                                                      │
+│  📆 Weekly Meal Planning                                                   │
 │  📱 Responsive Design                                                      │
+│  🌙 Dark Mode Support                                                      │
+│  📈 Analytics Tracking                                                     │
+│  🔒 Cookie Consent Management                                              │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 - **AI-Powered Nutrition**: Get personalized meal plans based on your unique profile
 - **Smart Meal Suggestions**: Receive intelligent food recommendations based on your preferences
+- **Weekly Meal Planning**: Generate complete 7-day meal plans with diverse meals
 - **Nutritional Database**: Access detailed nutritional information for thousands of foods
+- **SEO Optimized**: Enhanced metadata for better search engine visibility
+- **Analytics Integration**: Track user interactions and preferences for improved recommendations
+- **Rich Testimonials**: View success stories from users with similar goals
 - **Dietary Preferences**: Support for various diets including:
   - 🥬 Vegetarian
   - 🌱 Vegan
@@ -68,6 +76,7 @@ npm install
 3. Create a `.env.local` file in the root directory
 ```bash
 NEXT_PUBLIC_CALORIES_NINJAS_API_KEY=your_api_key_here
+NEXT_PUBLIC_GA_MEASUREMENT_ID=your_google_analytics_id_here
 ```
 
 4. Run the development server
@@ -85,8 +94,10 @@ npm run dev
 │  ⚛️  React + Next.js                                                       │
 │  📝 TypeScript                                                             │
 │  🎨 Tailwind CSS                                                           │
+│  🎭 Framer Motion                                                          │
 │  🔄 CaloriesNinjas API                                                     │
 │  🌙 next-themes                                                            │
+│  📈 Google Analytics                                                       │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -94,8 +105,11 @@ npm run dev
 - [Next.js](https://nextjs.org/) - React framework
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Framer Motion](https://www.framer.com/motion/) - Animations
 - [CaloriesNinjas API](https://caloriesninjas.com/) - Nutritional data
 - [next-themes](https://github.com/pacocoursey/next-themes) - Dark mode support
+- [Heroicons](https://heroicons.com/) - Icons
+- [Google Analytics](https://analytics.google.com/) - User analytics
 
 ## 📱 Features in Detail
 
@@ -106,34 +120,61 @@ npm run dev
 │  📊 Calculate your daily caloric needs                                     │
 │  🎯 Set personalized macro targets                                         │
 │  🍽️  Generate meal plans based on preferences                              │
+│  📆 Daily & Weekly meal planning options                                   │
 │  ⚖️  Track nutritional balance                                            │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2. Food Search
+### 2. Advanced Features
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│  🔍 Search for any food item                                              │
-│  📊 View detailed nutritional information                                  │
-│  📱 Mobile-friendly interface                                              │
-│  🌙 Dark mode support                                                      │
+│  🎭 Animated UI with Framer Motion                                         │
+│  🌐 Social sharing capabilities                                            │
+│  🔍 Categorized feature navigation                                         │
+│  🚀 Performance optimized loading                                          │
+│  🔒 Privacy-focused with cookie consent                                    │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3. Meal Suggestions
+### 3. Testimonials & Success Stories
 ```ascii
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│  🎯 Get personalized meal suggestions                                      │
-│  🥗 Consider dietary preferences                                           │
-│  ⚠️ Account for allergies and restrictions                                 │
-│  📊 Match macro targets                                                    │
+│  👤 Detailed user testimonials with demographics                           │
+│  🏆 Specific achievements and results                                      │
+│  ⭐ User ratings and feedback                                              │
+│  🏷️ Filter testimonials by goals                                          │
+│  📊 Success statistics and metrics                                         │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+### 4. Analytics & Tracking
+```ascii
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  📈 User interaction tracking                                              │
+│  🔍 Form usage analytics                                                   │
+│  🎯 Goal tracking and conversions                                          │
+│  📊 Diet plan generation metrics                                           │
+│  📱 Device and platform statistics                                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 🔄 Recent Updates
+
+- Added weekly meal planning capabilities
+- Implemented cookie consent management for GDPR compliance
+- Enhanced testimonials section with filtering and detailed user stories
+- Integrated analytics tracking for improved user experience
+- Created categorized feature navigation with smooth animations
+- Improved SEO with dynamic meta tags and structured data
+- Added social sharing functionality for diet plans
+- Implemented dynamic sitemap generation
 
 ## 🤝 Contributing
 
@@ -154,6 +195,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [CaloriesNinjas](https://caloriesninjas.com/) for providing nutritional data
 - [Next.js](https://nextjs.org/) team for the amazing framework
 - [Tailwind CSS](https://tailwindcss.com/) team for the utility-first CSS framework
+- [Framer Motion](https://www.framer.com/motion/) for the powerful animation library
+- [Heroicons](https://heroicons.com/) for the beautiful icon set
 
 ## 📧 Contact
 

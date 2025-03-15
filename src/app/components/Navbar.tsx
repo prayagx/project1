@@ -13,12 +13,30 @@ import {
 
 interface NavbarProps {
   activeSection: string;
-  setActiveSection: (section: string) => void;
+  onSectionChange?: (section: string) => void;
+  setActiveSection?: (section: string) => void; // Keep for backward compatibility
+  onThemeChange?: () => void;
+  theme?: string;
 }
 
-export function Navbar({ activeSection, setActiveSection }: NavbarProps) {
+export function Navbar({ 
+  activeSection, 
+  onSectionChange, 
+  setActiveSection, 
+  onThemeChange,
+  theme = 'light'
+}: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Use either onSectionChange or setActiveSection for compatibility
+  const handleSectionChange = (section: string) => {
+    if (onSectionChange) {
+      onSectionChange(section);
+    } else if (setActiveSection) {
+      setActiveSection(section);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,8 +73,8 @@ export function Navbar({ activeSection, setActiveSection }: NavbarProps) {
   return (
     <motion.nav 
       id="navbar"
-      className={`fixed top-0 left-0 right-0 bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border z-50 transition-all duration-300 ${
-        scrolled ? 'shadow-md' : ''
+      className={`fixed top-0 left-0 right-0 bg-white dark:bg-amoled-black border-b border-gray-200 dark:border-amoled-border z-50 transition-all duration-300 ${
+        scrolled ? 'shadow-md backdrop-blur-sm bg-white/90 dark:bg-amoled-black/95' : ''
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -80,21 +98,21 @@ export function Navbar({ activeSection, setActiveSection }: NavbarProps) {
                 <motion.a
                   key={item.section}
                   href={`#${item.section}`}
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 ${
+                  className={`inline-flex items-center px-3 py-1 text-sm font-medium transition-all duration-300 rounded-full ${
                     activeSection === item.section
-                      ? 'border-primary-500 text-gray-900 dark:text-white'
-                      : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700'
+                      ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800/30'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-amoled-card'
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
-                    setActiveSection(item.section);
+                    handleSectionChange(item.section);
                     const element = document.getElementById(item.section);
                     element?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   whileHover={{ y: -2 }}
                   whileTap={{ y: 0 }}
                 >
-                  <span className="mr-1">{item.icon}</span>
+                  <span className="mr-2">{item.icon}</span>
                   {item.name}
                 </motion.a>
               ))}
@@ -102,13 +120,13 @@ export function Navbar({ activeSection, setActiveSection }: NavbarProps) {
           </div>
 
           <div className="flex items-center space-x-3">
-            <ThemeToggle />
+            <ThemeToggle currentTheme={theme} onChange={onThemeChange} />
             
             <div className="sm:hidden">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="bg-white dark:bg-dark-card p-2 rounded-md text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300"
+                className="bg-white dark:bg-amoled-card p-2 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 shadow-sm"
               >
                 <span className="sr-only">Open main menu</span>
                 {isMobileMenuOpen ? (
@@ -126,25 +144,25 @@ export function Navbar({ activeSection, setActiveSection }: NavbarProps) {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
-            className="sm:hidden bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border"
+            className="sm:hidden bg-white dark:bg-amoled-card border-b border-gray-200 dark:border-amoled-border"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="px-2 pt-2 pb-3 space-y-1">
+            <div className="px-2 pt-2 pb-3 space-y-2">
               {navItems.map((item) => (
                 <motion.a
                   key={item.section}
                   href={`#${item.section}`}
-                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                  className={`block px-4 py-2 rounded-full text-base font-medium flex items-center ${
                     activeSection === item.section
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-bg'
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800/30'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-amoled-gray'
                   } transition-all duration-300`}
                   onClick={(e) => {
                     e.preventDefault();
-                    setActiveSection(item.section);
+                    handleSectionChange(item.section);
                     const element = document.getElementById(item.section);
                     element?.scrollIntoView({ behavior: 'smooth' });
                     setIsMobileMenuOpen(false);

@@ -31,6 +31,13 @@ const config: Config = {
           900: '#134e4a',
           950: '#042f2e',
         },
+        amoled: {
+          black: '#000000',
+          dark: '#0A0A0A',
+          card: '#121212',
+          border: '#1F1F1F',
+          gray: '#2A2A2A',
+        },
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
