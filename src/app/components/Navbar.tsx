@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
 import { ThemeToggle } from './ThemeToggle';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Bars3Icon,
+  XMarkIcon,
+  HomeIcon,
+  InformationCircleIcon,
+  ChartBarIcon,
+  UserGroupIcon,
+  ChatBubbleBottomCenterTextIcon,
+} from '@heroicons/react/24/outline';
 
 interface NavbarProps {
   activeSection: string;
@@ -34,99 +44,121 @@ export function Navbar({ activeSection, setActiveSection }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen]);
 
+  const navItems = [
+    { name: 'Home', section: 'home', icon: <HomeIcon className="h-5 w-5" /> },
+    { name: 'Features', section: 'features', icon: <ChartBarIcon className="h-5 w-5" /> },
+    { name: 'About', section: 'about', icon: <InformationCircleIcon className="h-5 w-5" /> },
+    { name: 'Testimonials', section: 'testimonials', icon: <UserGroupIcon className="h-5 w-5" /> },
+    { name: 'Contact', section: 'contact', icon: <ChatBubbleBottomCenterTextIcon className="h-5 w-5" /> },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border z-50">
+    <motion.nav 
+      id="navbar"
+      className={`fixed top-0 left-0 right-0 bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border z-50 transition-all duration-300 ${
+        scrolled ? 'shadow-md' : ''
+      }`}
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-gray-900 dark:text-dark-text">
+            <motion.div 
+              className="flex-shrink-0 flex items-center"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-xl font-bold text-gradient">
                 MacroMindAI
               </span>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <button
-                onClick={() => setActiveSection('home')}
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  activeSection === 'home'
-                    ? 'border-blue-500 text-gray-900 dark:text-dark-text'
-                    : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-dark-border hover:text-gray-700 dark:hover:text-dark-text'
-                }`}
-              >
-                Home
-              </button>
-              <button
-                onClick={() => setActiveSection('generator')}
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  activeSection === 'generator'
-                    ? 'border-blue-500 text-gray-900 dark:text-dark-text'
-                    : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-dark-border hover:text-gray-700 dark:hover:text-dark-text'
-                }`}
-              >
-                Diet Generator
-              </button>
-              <button
-                onClick={() => setActiveSection('about')}
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  activeSection === 'about'
-                    ? 'border-blue-500 text-gray-900 dark:text-dark-text'
-                    : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-dark-border hover:text-gray-700 dark:hover:text-dark-text'
-                }`}
-              >
-                About
-              </button>
+            </motion.div>
+            
+            <div className="hidden sm:ml-8 sm:flex sm:space-x-8 items-center">
+              {navItems.map((item) => (
+                <motion.a
+                  key={item.section}
+                  href={`#${item.section}`}
+                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 ${
+                    activeSection === item.section
+                      ? 'border-primary-500 text-gray-900 dark:text-white'
+                      : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveSection(item.section);
+                    const element = document.getElementById(item.section);
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0 }}
+                >
+                  <span className="mr-1">{item.icon}</span>
+                  {item.name}
+                </motion.a>
+              ))}
             </div>
           </div>
-          <div className="flex items-center">
+
+          <div className="flex items-center space-x-3">
             <ThemeToggle />
+            
+            <div className="sm:hidden">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="bg-white dark:bg-dark-card p-2 rounded-md text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300"
+              >
+                <span className="sr-only">Open main menu</span>
+                {isMobileMenuOpen ? (
+                  <XMarkIcon className="block h-6 w-6" />
+                ) : (
+                  <Bars3Icon className="block h-6 w-6" />
+                )}
+              </motion.button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div className={`sm:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
-        <div className="pt-2 pb-3 space-y-1 bg-white dark:bg-dark-card">
-          <button
-            onClick={() => {
-              setActiveSection('home');
-              setIsMobileMenuOpen(false);
-            }}
-            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-              activeSection === 'home'
-                ? 'bg-blue-50 dark:bg-dark-bg border-blue-500 text-blue-700 dark:text-dark-text'
-                : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-bg hover:border-gray-300 dark:hover:border-dark-border hover:text-gray-700 dark:hover:text-dark-text'
-            }`}
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            className="sm:hidden bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            Home
-          </button>
-          <button
-            onClick={() => {
-              setActiveSection('generator');
-              setIsMobileMenuOpen(false);
-            }}
-            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-              activeSection === 'generator'
-                ? 'bg-blue-50 dark:bg-dark-bg border-blue-500 text-blue-700 dark:text-dark-text'
-                : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-bg hover:border-gray-300 dark:hover:border-dark-border hover:text-gray-700 dark:hover:text-dark-text'
-            }`}
-          >
-            Diet Generator
-          </button>
-          <button
-            onClick={() => {
-              setActiveSection('about');
-              setIsMobileMenuOpen(false);
-            }}
-            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-              activeSection === 'about'
-                ? 'bg-blue-50 dark:bg-dark-bg border-blue-500 text-blue-700 dark:text-dark-text'
-                : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-bg hover:border-gray-300 dark:hover:border-dark-border hover:text-gray-700 dark:hover:text-dark-text'
-            }`}
-          >
-            About
-          </button>
-        </div>
-      </div>
-    </nav>
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navItems.map((item) => (
+                <motion.a
+                  key={item.section}
+                  href={`#${item.section}`}
+                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                    activeSection === item.section
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-bg'
+                  } transition-all duration-300`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveSection(item.section);
+                    const element = document.getElementById(item.section);
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                    setIsMobileMenuOpen(false);
+                  }}
+                  whileHover={{ x: 5 }}
+                >
+                  <span className="mr-2">{item.icon}</span>
+                  {item.name}
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 } 
