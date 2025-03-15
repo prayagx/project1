@@ -86,6 +86,28 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
+### Editor Configuration
+
+This project uses Tailwind CSS, which requires specific editor settings to eliminate CSS validation warnings:
+
+```bash
+# .vscode/settings.json
+{
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "editor.quickSuggestions": {
+    "strings": true
+  }
+}
+```
+
+These settings:
+- Disable the built-in CSS/LESS/SCSS validators that don't recognize Tailwind directives
+- Enable code suggestions within string literals (helpful for Tailwind classes)
+
+VS Code should automatically apply these settings when you open the project.
+
 ## 🛠️ Built With
 
 ```ascii
