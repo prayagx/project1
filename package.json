@@ -7,8 +7,8 @@
     "open-chrome": "open -a 'Google Chrome' http://localhost:3001",
     "chrome": "node scripts/start.mjs",
     "live": "node scripts/live-server.mjs",
-    "prebuild": "npm audit fix --force",
-    "build": "npm install --legacy-peer-deps && next build || true",
+    "build": "next build",
+    "postinstall": "npm audit fix --force || true",
     "start": "next start",
     "lint": "next lint",
     "netlify-dev": "netlify dev"
@@ -24,7 +24,6 @@
     "react": "18.2.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "18.2.0",
-    "react-scripts": "^5.0.1",
     "styled-jsx": "^5.1.6"
   },
   "devDependencies": {
@@ -39,5 +38,8 @@
     "postcss": "8.4.35",
     "tailwindcss": "3.4.1",
     "typescript": "4.9.5"
+  },
+  "overrides": {
+    "postcss": "8.4.35"
   }
 }

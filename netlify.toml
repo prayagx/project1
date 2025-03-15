@@ -1,11 +1,11 @@
 [build]
-  command = "npm run prebuild && npm run build"
+  command = "npm ci --legacy-peer-deps && npm run build"
   publish = "out"
 
 [build.environment]
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
   NODE_VERSION = "18"
-  NPM_FLAGS = "--legacy-peer-deps --no-audit"
+  CI = "false"
   NEXT_TELEMETRY_DISABLED = "1"
 
 [[plugins]]

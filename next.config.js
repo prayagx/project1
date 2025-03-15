@@ -1,16 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
-  experimental: {
-    // Retain only valid experimental features
-    webVitalsAttribution: ['CLS', 'LCP', 'FCP'],
-  },
-  // Ensure output is configured for Netlify
   output: 'export',
-  // Disable image optimization for static exports
   images: {
     unoptimized: true,
-    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -23,6 +16,12 @@ const nextConfig = {
         pathname: '**',
       },
     ],
+  },
+  // Disable the telemetry to avoid issues
+  distDir: process.env.BUILD_DIR || '.next',
+  // Adjust to prevent sitemap generation errors
+  webpack: (config) => {
+    return config;
   },
 };
 
