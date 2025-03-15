@@ -1,12 +1,10 @@
-/**
- * Enhanced sitemap data module with a direct default export
- * Optimized for Next.js 15 and React 19
- */
+// Direct ES modules export syntax that Next.js expects
+// This file provides sitemap data for use in route handlers and other components
 
 // Define the site URL, with fallback
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://macromindai.com';
 
-// Define the page data with standardized structure for Next.js 15 compatibility
+// Define the page data
 const pages = [
   { url: '/', priority: 1.0, changefreq: 'weekly' },
   { url: '/#generator', priority: 0.9, changefreq: 'daily' },
@@ -18,10 +16,9 @@ const pages = [
   { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
 ];
 
-// Helper functions for sitemap generation
+// Generate the sitemap XML
 const generateSitemapXml = () => {
   const currentDate = new Date().toISOString().split('T')[0];
-  
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${pages.map(page => `  <url>
@@ -33,27 +30,19 @@ ${pages.map(page => `  <url>
 </urlset>`;
 };
 
+// Generate robots.txt content
 const generateRobotsTxt = () => {
-  return `# https://www.robotstxt.org/robotstxt.html
-User-agent: *
+  return `User-agent: *
 Allow: /
-
-# Disallow certain paths that shouldn't be indexed
-Disallow: /api/
-Disallow: /_next/
 Disallow: /404
 Disallow: /500
 Disallow: /*.json$
-
-# Crawl delay for better server performance
 Crawl-delay: 1
 
-# Point to sitemap location
-Sitemap: ${SITE_URL}/sitemap.xml
-`;
+Sitemap: ${SITE_URL}/sitemap.xml`;
 };
 
-// Direct default export for maximum compatibility with Next.js 15
+// Export the module with all sitemap-related utilities
 export default {
   siteUrl: SITE_URL,
   pages,

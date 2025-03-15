@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import sitemapUtils from '../utils/sitemap.js';
 
 // Best practices for Next.js 15 static content
 export const dynamic = 'force-static';
@@ -7,29 +8,11 @@ export const runtime = 'nodejs'; // Use Node.js runtime for best compatibility
 
 export async function GET() {
   try {
-    // Define the site URL, with fallback
-    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://macromindai.com';
+    // Generate robots.txt content using our utility function
+    const robotsTxtContent = sitemapUtils.generateRobotsTxt();
     
-    // Generate the robots.txt content
-    const content = `# https://www.robotstxt.org/robotstxt.html
-User-agent: *
-Allow: /
-
-# Disallow certain paths that shouldn't be indexed
-Disallow: /api/
-Disallow: /_next/
-Disallow: /404
-Disallow: /500
-Disallow: /*.json$
-
-# Crawl delay for better server performance
-Crawl-delay: 1
-
-# Point to sitemap location
-Sitemap: ${SITE_URL}/sitemap.xml
-`;
-
-    return new NextResponse(content, {
+    // Return with proper headers for text content
+    return new NextResponse(robotsTxtContent, {
       headers: {
         'Content-Type': 'text/plain',
         'Cache-Control': 'public, max-age=86400, s-maxage=86400'
