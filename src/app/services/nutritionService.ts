@@ -1,4 +1,5 @@
-const API_KEY = '2aTe+XclgBPfWNTeP/83Cw==hqIdsMOtY2IRIkGF';
+// Use environment variable instead of hardcoding API key
+const API_KEY = process.env.CALORIE_NINJAS_API_KEY || '2aTe+XclgBPfWNTeP/83Cw==hqIdsMOtY2IRIkGF';
 const BASE_URL = 'https://api.calorieninjas.com/v1';
 
 export interface NutritionInfo {

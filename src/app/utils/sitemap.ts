@@ -1,8 +1,7 @@
 import { seoConfig } from '../config';
 
-// Direct default export with explicit TypeScript typing
-export default {
-  siteUrl: 'https://macromindai.com',
+const sitemapData = {
+  siteUrl: seoConfig.siteUrl || 'https://macromindai.com',
   pages: [
     { url: '/', priority: 1.0, changefreq: 'weekly' },
     { url: '/#generator', priority: 0.9, changefreq: 'daily' },
@@ -13,4 +12,6 @@ export default {
     { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
     { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
   ]
-}; 
+};
+
+export default sitemapData; 
