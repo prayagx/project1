@@ -1,5 +1,5 @@
-// Plain JavaScript version - sometimes TypeScript can cause build issues
-const sitemap = {
+// Direct default export with no intermediary variable
+module.exports = {
   siteUrl: 'https://macromindai.com',
   pages: [
     { url: '/', priority: 1.0, changefreq: 'weekly' },
@@ -11,7 +11,4 @@ const sitemap = {
     { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
     { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
   ]
-};
-
-// Direct default export
-module.exports = sitemap; 
+}; 
