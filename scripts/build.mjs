@@ -132,7 +132,7 @@ module.exports = nextConfig;`;
   
   try {
     // Run the build command
-    execSync('next build', { stdio: 'inherit' });
+    execSync('next build --debug', { stdio: 'inherit' });
     
     console.log(`\n${colors.bright}${colors.green}Build completed successfully!${colors.reset}`);
     console.log(`\n${colors.cyan}The static site has been generated in the 'out' directory.${colors.reset}`);
