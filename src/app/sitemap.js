@@ -1,10 +1,10 @@
-// src/app/sitemap.js - Static sitemap configuration for Next.js 15
+// src/app/sitemap.js - Static metadata file for Next.js 15 static export
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://macromindai.com';
-const currentDate = new Date().toISOString();
-
 export default function sitemap() {
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://macromindai.com';
+  const currentDate = new Date().toISOString();
+  
   return [
     {
       url: `${SITE_URL}/`,
