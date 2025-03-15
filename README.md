@@ -1,5 +1,7 @@
 # 🥗 MacroMindAI - Your AI-Powered Nutrition Companion
 
+> **Note:** This project uses Next.js App Router. The legacy Pages Router files are kept for reference only.
+
 <div align="center">
 
 ```ascii
