@@ -1,19 +1,5 @@
 import { NextResponse } from 'next/server';
-// Import sitemap from index.js instead
-import sitemapData from '../utils/index.js';
-
-// Define the interface for the sitemap object
-interface SitemapData {
-  siteUrl: string;
-  pages: Array<{
-    url: string;
-    priority: number;
-    changefreq: string;
-  }>;
-}
-
-// Cast the imported data to our interface
-const sitemap = sitemapData as SitemapData;
+import sitemapData from '../utils/sitemap.js';
 
 // Add revalidation setting for static export
 export const revalidate = 1;
@@ -24,7 +10,7 @@ export async function GET() {
 User-agent: *
 Allow: /
 
-Sitemap: ${sitemap.siteUrl}/sitemap.xml
+Sitemap: ${sitemapData.siteUrl}/sitemap.xml
 `;
 
   return new NextResponse(content, {

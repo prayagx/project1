@@ -1,10 +1,4 @@
-// Dual-mode export that works in both CommonJS and ES Modules environments
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
+// src/app/utils/sitemap.js
 const sitemapData = {
   siteUrl: 'https://macromindai.com',
   pages: [
@@ -19,11 +13,4 @@ const sitemapData = {
   ]
 };
 
-// Set both default export and module.exports for maximum compatibility
-exports.default = sitemapData;
-// For CommonJS environments
-if (typeof module !== 'undefined') {
-  module.exports = sitemapData;
-  // Also add named exports for direct property access
-  module.exports.default = sitemapData;
-} 
+export default sitemapData; 
