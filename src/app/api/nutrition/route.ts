@@ -1,48 +1,44 @@
 import { NextResponse } from 'next/server';
 
-const API_KEY = process.env.CALORIE_NINJAS_API_KEY;
-const BASE_URL = 'https://api.calorieninjas.com/v1';
+// Set dynamic to force-static for static export
+export const dynamic = 'force-static';
+export const revalidate = false;
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('query');
-
-  if (!query) {
-    return NextResponse.json(
-      { error: 'Query parameter is required' },
-      { status: 400 }
-    );
-  }
-
-  if (!API_KEY) {
-    console.error('API key is not defined in environment variables');
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/nutrition?query=${encodeURIComponent(query)}`,
-      {
-        headers: {
-          'X-Api-Key': API_KEY,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch nutrition data: ${response.status}`);
+// Mock nutrition data for static export
+const mockNutritionData = {
+  items: [
+    {
+      name: "apple",
+      calories: 52,
+      serving_size_g: 100,
+      fat_total_g: 0.2,
+      fat_saturated_g: 0,
+      protein_g: 0.3,
+      sodium_mg: 1,
+      potassium_mg: 107,
+      cholesterol_mg: 0,
+      carbohydrates_total_g: 14,
+      fiber_g: 2.4,
+      sugar_g: 10.3
+    },
+    {
+      name: "banana",
+      calories: 89,
+      serving_size_g: 100,
+      fat_total_g: 0.3,
+      fat_saturated_g: 0.1,
+      protein_g: 1.1,
+      sodium_mg: 1,
+      potassium_mg: 358,
+      cholesterol_mg: 0,
+      carbohydrates_total_g: 22.8,
+      fiber_g: 2.6,
+      sugar_g: 12.2
     }
+  ]
+};
 
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error fetching nutrition data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch nutrition data' },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  // For static export, we return mock data
+  return NextResponse.json(mockNutritionData);
 } 

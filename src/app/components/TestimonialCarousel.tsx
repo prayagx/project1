@@ -140,6 +140,9 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
                       src={filteredTestimonials[currentTestimonial].image}
                       alt={filteredTestimonials[currentTestimonial].name}
                       fill
+                      priority
+                      sizes="(max-width: 768px) 96px, 96px"
+                      quality={85}
                       style={{ objectFit: 'cover' }}
                     />
                   </div>

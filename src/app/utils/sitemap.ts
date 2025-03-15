@@ -93,4 +93,13 @@ Sitemap: ${baseUrl}/sitemap.xml
 export function generateSEOFiles(): void {
   generateSitemap();
   generateRobotsTxt();
-} 
+}
+
+// Default export for the module
+const sitemapUtils = {
+  generateSitemap,
+  generateRobotsTxt,
+  generateSEOFiles
+};
+
+export default sitemapUtils; 

@@ -7,7 +7,7 @@
     "open-chrome": "open -a 'Google Chrome' http://localhost:3001",
     "chrome": "node scripts/start.mjs",
     "live": "node scripts/live-server.mjs",
-    "build": "next build",
+    "build": "node scripts/build.mjs",
     "start": "next start",
     "lint": "next lint",
     "netlify-dev": "netlify dev"

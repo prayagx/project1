@@ -5,27 +5,24 @@ const nextConfig = {
     // Retain only valid experimental features
     webVitalsAttribution: ['CLS', 'LCP', 'FCP'],
   },
+  // Ensure output is configured for Netlify
+  output: 'export',
+  // Disable image optimization for static exports
   images: {
+    unoptimized: true,
+    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
         pathname: '**',
       },
-    ],
-  },
-  async headers() {
-    return [
       {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-        ],
+        protocol: 'https',
+        hostname: 'randomuser.me',
+        pathname: '**',
       },
-    ];
+    ],
   },
 };
 
