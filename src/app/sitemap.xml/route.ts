@@ -1,38 +1,17 @@
 import { NextResponse } from 'next/server';
 import sitemap from '../utils/sitemap';
 
-// Define the interface for the sitemap data
-interface SitemapPage {
-  url: string;
-  priority: number;
-  changefreq: string;
-}
+// Type definitions for the sitemap module are now in the module itself
 
-interface SitemapData {
-  siteUrl: string;
-  pages: SitemapPage[];
-}
-
-// Use static rendering for improved performance and compatibility
+// Best practices for Next.js 15 static content
 export const dynamic = 'force-static';
-export const revalidate = false; // Never revalidate during build
+export const revalidate = false; // Never revalidate during build 
+export const runtime = 'nodejs'; // Use Node.js runtime for best compatibility
 
 export async function GET(): Promise<NextResponse> {
   try {
-    // Cast the imported data to our interface
-    const { siteUrl, pages } = sitemap as SitemapData;
-    const currentDate = new Date().toISOString().split('T')[0];
-    
-    // Create sitemap XML using template literals and modern array methods
-    const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${pages.map((page: SitemapPage) => `  <url>
-    <loc>${siteUrl}${page.url}</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority.toFixed(1)}</priority>
-  </url>`).join('\n')}
-</urlset>`;
+    // No need for casting as the module is already typed
+    const sitemapContent = sitemap.generateSitemapXml();
 
     // Return with proper headers for XML content
     return new NextResponse(sitemapContent, {
