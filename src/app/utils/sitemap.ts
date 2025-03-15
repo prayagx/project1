@@ -1,104 +1,57 @@
-import fs from 'fs';
 import { seoConfig } from '../config';
 
-type UrlObject = {
-  url: string;
-  lastmod?: string;
-  changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
-  priority?: number;
-};
+// Define the sitemap configuration as suggested in the error message
+const sitemap = {
+  // Helper function to generate sitemap
+  async generateSitemap(baseUrl = seoConfig.siteUrl, outputPath = './public/sitemap.xml') {
+    const staticPages = [
+      { url: '/', priority: 1.0, changefreq: 'weekly' },
+      { url: '/#generator', priority: 0.9, changefreq: 'daily' },
+      { url: '/#features', priority: 0.8, changefreq: 'monthly' },
+      { url: '/#testimonials', priority: 0.7, changefreq: 'monthly' },
+      { url: '/#about', priority: 0.6, changefreq: 'monthly' },
+      { url: '/#contact', priority: 0.6, changefreq: 'monthly' },
+      { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
+      { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
+    ];
 
-/**
- * Generate a sitemap.xml file for the website
- */
-function generateSitemap(
-  baseUrl: string = seoConfig.siteUrl,
-  outputPath: string = './public/sitemap.xml'
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    try {
-      // Main static pages
-      const staticPages: UrlObject[] = [
-        { url: '/', priority: 1.0, changefreq: 'weekly' },
-        { url: '/#generator', priority: 0.9, changefreq: 'daily' },
-        { url: '/#features', priority: 0.8, changefreq: 'monthly' },
-        { url: '/#testimonials', priority: 0.7, changefreq: 'monthly' },
-        { url: '/#about', priority: 0.6, changefreq: 'monthly' },
-        { url: '/#contact', priority: 0.6, changefreq: 'monthly' },
-        { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
-        { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
-      ];
-    
-      // Current date for lastmod
-      const currentDate = new Date().toISOString().split('T')[0];
-    
-      // Create sitemap XML content
-      let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-    
-      // Add each URL to the sitemap
-      staticPages.forEach((page) => {
-        sitemapContent += `  <url>\n`;
-        sitemapContent += `    <loc>${baseUrl}${page.url}</loc>\n`;
-        sitemapContent += `    <lastmod>${currentDate}</lastmod>\n`;
-        if (page.changefreq) {
-          sitemapContent += `    <changefreq>${page.changefreq}</changefreq>\n`;
-        }
-        if (page.priority !== undefined) {
-          sitemapContent += `    <priority>${page.priority.toFixed(1)}</priority>\n`;
-        }
-        sitemapContent += `  </url>\n`;
-      });
-    
-      // Close sitemap
-      sitemapContent += `</urlset>`;
-    
-      // Write sitemap file
-      fs.writeFileSync(outputPath, sitemapContent);
-      console.log(`Sitemap generated at ${outputPath}`);
-      resolve();
-    } catch (err) {
-      console.error('Error writing sitemap:', err);
-      reject(err);
-    }
-  });
-}
-
-/**
- * Generate a robots.txt file for the website
- */
-function generateRobotsTxt(
-  baseUrl: string = seoConfig.siteUrl,
-  outputPath: string = './public/robots.txt'
-): void {
-  const robotsTxtContent = `# https://www.robotstxt.org/robotstxt.html
+    return {
+      staticPages,
+      baseUrl,
+      generateXML() {
+        const currentDate = new Date().toISOString().split('T')[0];
+        
+        let content = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+        
+        staticPages.forEach(page => {
+          content += `
+  <url>
+    <loc>${baseUrl}${page.url}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority.toFixed(1)}</priority>
+  </url>`;
+        });
+        
+        content += `
+</urlset>`;
+        
+        return content;
+      }
+    };
+  },
+  
+  // Helper function to generate robots.txt
+  generateRobotsTxt(baseUrl = seoConfig.siteUrl) {
+    return `# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 
 Sitemap: ${baseUrl}/sitemap.xml
 `;
-
-  try {
-    fs.writeFileSync(outputPath, robotsTxtContent);
-    console.log(`robots.txt generated at ${outputPath}`);
-  } catch (err) {
-    console.error('Error writing robots.txt:', err);
   }
-}
-
-/**
- * Generate sitemap and robots.txt files
- */
-function generateSEOFiles(): void {
-  generateSitemap();
-  generateRobotsTxt();
-}
-
-const sitemapUtils = {
-  generateSitemap,
-  generateRobotsTxt,
-  generateSEOFiles
 };
 
-export { generateSitemap, generateRobotsTxt, generateSEOFiles };
-export default sitemapUtils; 
+// Export the sitemap object as the default export
+export default sitemap; 
