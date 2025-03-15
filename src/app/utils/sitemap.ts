@@ -1,6 +1,18 @@
 import fs from 'fs';
 import { seoConfig } from '../config';
 
+/**
+ * Sitemap utilities for generating SEO files
+ */
+const sitemapUtils = {
+  generateSitemap,
+  generateRobotsTxt,
+  generateSEOFiles
+};
+
+// Default export for the module
+export default sitemapUtils;
+
 type UrlObject = {
   url: string;
   lastmod?: string;
@@ -93,13 +105,4 @@ Sitemap: ${baseUrl}/sitemap.xml
 export function generateSEOFiles(): void {
   generateSitemap();
   generateRobotsTxt();
-}
-
-// Default export for the module
-const sitemapUtils = {
-  generateSitemap,
-  generateRobotsTxt,
-  generateSEOFiles
-};
-
-export default sitemapUtils; 
+} 
