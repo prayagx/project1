@@ -1,20 +1,33 @@
 import { NextResponse } from 'next/server';
-import sitemap from '../utils/sitemap';
 
-// Use static rendering for improved performance and compatibility
+// Best practices for Next.js 15 static content
 export const dynamic = 'force-static';
-export const revalidate = false; // Never revalidate during build
+export const revalidate = false; // Never revalidate during build 
+export const runtime = 'nodejs'; // Use Node.js runtime for best compatibility
 
 export async function GET() {
   try {
-    const { siteUrl, pages } = sitemap;
-    const currentDate = new Date().toISOString().split('T')[0];
+    // Define the site URL, with fallback
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://macromindai.com';
     
-    // Create sitemap XML using template literals for better readability
+    // Define the page data
+    const pages = [
+      { url: '/', priority: 1.0, changefreq: 'weekly' },
+      { url: '/#generator', priority: 0.9, changefreq: 'daily' },
+      { url: '/#features', priority: 0.8, changefreq: 'monthly' },
+      { url: '/#testimonials', priority: 0.7, changefreq: 'monthly' },
+      { url: '/#about', priority: 0.6, changefreq: 'monthly' },
+      { url: '/#contact', priority: 0.6, changefreq: 'monthly' },
+      { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
+      { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
+    ];
+    
+    // Generate the sitemap XML
+    const currentDate = new Date().toISOString().split('T')[0];
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${pages.map(page => `  <url>
-    <loc>${siteUrl}${page.url}</loc>
+    <loc>${SITE_URL}${page.url}</loc>
     <lastmod>${currentDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority.toFixed(1)}</priority>
@@ -29,7 +42,7 @@ ${pages.map(page => `  <url>
       }
     });
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    console.error('Error generating sitemap:', error instanceof Error ? error.message : String(error));
     return new NextResponse('Error generating sitemap', { 
       status: 500,
       headers: { 'Content-Type': 'text/plain' }

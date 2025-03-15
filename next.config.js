@@ -32,15 +32,21 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
-  // Configuration for the latest Next.js
+  // Configuration for the latest Next.js 15
   experimental: {
+    // Optimize package imports (stable in Next.js 15)
     optimizePackageImports: ['@heroicons/react', '@headlessui/react', 'framer-motion'],
-    // Enhanced build output and error reporting
-    instrumentationHook: true,
-    // Improved performance for large deps
-    turbotrace: {
-      logLevel: 'error'
-    }
+    // Enable Turbopack (now stable in Next.js 15)
+    turbo: {
+      resolveAlias: {
+        // Handle common module resolution issues
+        '@': './src',
+      },
+    },
+    // Server Actions enhanced security
+    serverActions: {
+      bodySizeLimit: '2mb', // Limit request size for safety
+    },
   },
   // Improved webpack configuration for compatibility
   webpack: (config) => {
