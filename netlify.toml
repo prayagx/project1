@@ -4,12 +4,14 @@
 
 [build.environment]
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
   CI = "false"
   NEXT_TELEMETRY_DISABLED = "1"
   NETLIFY_USE_YARN = "false"
   NEXT_OUTPUT_STANDALONE = "true"
   NEXT_BUILD_TARGET = "standalone"
+  NEXT_EXPERIMENTAL_TURBOPACK = "1"
+  NEXT_EXPERIMENTAL_STATIC_INDICATOR = "1"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
