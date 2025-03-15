@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
   output: 'export',
   images: {
     unoptimized: true,
@@ -31,6 +31,10 @@ const nextConfig = {
     // your project has type errors.
     // !! WARN !!
     ignoreBuildErrors: true,
+  },
+  // Configuration for the latest Next.js
+  experimental: {
+    optimizePackageImports: ['@heroicons/react', '@headlessui/react', 'framer-motion'],
   },
   // Adjust to prevent sitemap generation errors
   webpack: (config) => {

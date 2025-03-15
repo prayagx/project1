@@ -1,5 +1,8 @@
-// src/app/utils/sitemap.js
-const sitemapData = {
+/**
+ * Simple sitemap data module with a direct default export
+ * This pattern follows the exact recommendation from Next.js and Netlify
+ */
+export default {
   siteUrl: 'https://macromindai.com',
   pages: [
     { url: '/', priority: 1.0, changefreq: 'weekly' },
@@ -11,6 +14,4 @@ const sitemapData = {
     { url: '/privacy-policy', priority: 0.4, changefreq: 'yearly' },
     { url: '/terms-of-service', priority: 0.4, changefreq: 'yearly' }
   ]
-};
-
-export default sitemapData; 
+}; 

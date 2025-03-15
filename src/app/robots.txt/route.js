@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import sitemapData from '../utils/sitemap.js';
+import sitemap from '../utils/sitemap';
 
-// Add revalidation setting for static export
-export const revalidate = 1;
+// Using the static flag is preferred for static export in Next.js 14+
+export const dynamic = 'force-static';
 
 export async function GET() {
   // Generate robots.txt content directly
@@ -10,7 +10,7 @@ export async function GET() {
 User-agent: *
 Allow: /
 
-Sitemap: ${sitemapData.siteUrl}/sitemap.xml
+Sitemap: ${sitemap.siteUrl}/sitemap.xml
 `;
 
   return new NextResponse(content, {

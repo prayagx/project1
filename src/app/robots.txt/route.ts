@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-// Import sitemap from index.js instead
-import sitemapData from '../utils/index.js';
+import sitemap from '../utils/sitemap';
 
 // Define the interface for the sitemap object
 interface SitemapData {
@@ -12,19 +11,19 @@ interface SitemapData {
   }>;
 }
 
-// Cast the imported data to our interface
-const sitemap = sitemapData as SitemapData;
-
-// Add revalidation setting for static export
-export const revalidate = 1;
+// Using the static flag is preferred for static export in Next.js 14+
+export const dynamic = 'force-static';
 
 export async function GET() {
+  // Cast the imported data to our interface
+  const typedSitemap = sitemap as SitemapData;
+  
   // Generate robots.txt content directly
   const content = `# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 
-Sitemap: ${sitemap.siteUrl}/sitemap.xml
+Sitemap: ${typedSitemap.siteUrl}/sitemap.xml
 `;
 
   return new NextResponse(content, {

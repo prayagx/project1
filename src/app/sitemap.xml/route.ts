@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-// Import sitemap from index.js instead
-import sitemapData from '../utils/index.js';
+import sitemap from '../utils/sitemap';
 
 // Define the interface for the sitemap object
 interface SitemapPage {
@@ -14,16 +13,16 @@ interface SitemapData {
   pages: SitemapPage[];
 }
 
-// Cast the imported data to our interface
-const sitemap = sitemapData as SitemapData;
-
-// Add revalidation setting for static export
-export const revalidate = 1;
+// Using the static flag is preferred for static export in Next.js 14+
+export const dynamic = 'force-static';
 
 export async function GET() {
   try {
+    // Cast the imported data to our interface
+    const typedSitemap = sitemap as SitemapData;
+    
     // Generate the sitemap content directly
-    const baseUrl = sitemap.siteUrl;
+    const baseUrl = typedSitemap.siteUrl;
     const currentDate = new Date().toISOString().split('T')[0];
     
     // Create sitemap XML content
@@ -31,7 +30,7 @@ export async function GET() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
     
     // Add each URL to the sitemap
-    sitemap.pages.forEach((page: SitemapPage) => {
+    typedSitemap.pages.forEach((page: SitemapPage) => {
       sitemapContent += `
   <url>
     <loc>${baseUrl}${page.url}</loc>

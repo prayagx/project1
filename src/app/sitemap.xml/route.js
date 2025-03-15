@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import sitemapData from '../utils/sitemap.js';
+import sitemap from '../utils/sitemap';
 
-// Add revalidation setting for static export
-export const revalidate = 1;
+// Using the static flag is preferred for static export in Next.js 14+
+export const dynamic = 'force-static';
 
 export async function GET() {
   try {
     // Generate the sitemap content directly
-    const baseUrl = sitemapData.siteUrl;
+    const baseUrl = sitemap.siteUrl;
     const currentDate = new Date().toISOString().split('T')[0];
     
     // Create sitemap XML content
@@ -15,7 +15,7 @@ export async function GET() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
     
     // Add each URL to the sitemap
-    sitemapData.pages.forEach(page => {
+    sitemap.pages.forEach(page => {
       sitemapContent += `
   <url>
     <loc>${baseUrl}${page.url}</loc>
