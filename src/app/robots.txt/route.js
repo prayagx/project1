@@ -1,16 +1,24 @@
 import { NextResponse } from 'next/server';
 import sitemap from '../utils/sitemap';
 
-// Using the static flag is preferred for static export in Next.js 14+
+// Use static rendering for improved performance and compatibility
 export const dynamic = 'force-static';
+export const revalidate = false; // Never revalidate during build
 
 export async function GET() {
-  // Generate robots.txt content directly
+  const { siteUrl } = sitemap;
+  
+  // Generate robots.txt with best practices for search engines
   const content = `# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 
-Sitemap: ${sitemap.siteUrl}/sitemap.xml
+# Disallow certain paths that shouldn't be indexed
+Disallow: /api/
+Disallow: /_next/
+
+# Point to sitemap location
+Sitemap: ${siteUrl}/sitemap.xml
 `;
 
   return new NextResponse(content, {

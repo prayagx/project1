@@ -1,35 +1,27 @@
 import { NextResponse } from 'next/server';
 import sitemap from '../utils/sitemap';
 
-// Using the static flag is preferred for static export in Next.js 14+
+// Use static rendering for improved performance and compatibility
 export const dynamic = 'force-static';
+export const revalidate = false; // Never revalidate during build
 
 export async function GET() {
   try {
-    // Generate the sitemap content directly
-    const baseUrl = sitemap.siteUrl;
+    const { siteUrl, pages } = sitemap;
     const currentDate = new Date().toISOString().split('T')[0];
     
-    // Create sitemap XML content
-    let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
-    
-    // Add each URL to the sitemap
-    sitemap.pages.forEach(page => {
-      sitemapContent += `
-  <url>
-    <loc>${baseUrl}${page.url}</loc>
+    // Create sitemap XML using template literals for better readability
+    const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages.map(page => `  <url>
+    <loc>${siteUrl}${page.url}</loc>
     <lastmod>${currentDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority.toFixed(1)}</priority>
-  </url>`;
-    });
-    
-    // Close sitemap
-    sitemapContent += `
+  </url>`).join('\n')}
 </urlset>`;
 
-    // Return the XML with the appropriate content type
+    // Return with proper headers for XML content
     return new NextResponse(sitemapContent, {
       headers: {
         'Content-Type': 'application/xml',

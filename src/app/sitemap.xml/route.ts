@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import sitemap from '../utils/sitemap';
 
-// Define the interface for the sitemap object
+// Define the interface for the sitemap data
 interface SitemapPage {
   url: string;
   priority: number;
@@ -13,38 +13,28 @@ interface SitemapData {
   pages: SitemapPage[];
 }
 
-// Using the static flag is preferred for static export in Next.js 14+
+// Use static rendering for improved performance and compatibility
 export const dynamic = 'force-static';
+export const revalidate = false; // Never revalidate during build
 
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   try {
     // Cast the imported data to our interface
-    const typedSitemap = sitemap as SitemapData;
-    
-    // Generate the sitemap content directly
-    const baseUrl = typedSitemap.siteUrl;
+    const { siteUrl, pages } = sitemap as SitemapData;
     const currentDate = new Date().toISOString().split('T')[0];
     
-    // Create sitemap XML content
-    let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
-    
-    // Add each URL to the sitemap
-    typedSitemap.pages.forEach((page: SitemapPage) => {
-      sitemapContent += `
-  <url>
-    <loc>${baseUrl}${page.url}</loc>
+    // Create sitemap XML using template literals and modern array methods
+    const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages.map((page: SitemapPage) => `  <url>
+    <loc>${siteUrl}${page.url}</loc>
     <lastmod>${currentDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority.toFixed(1)}</priority>
-  </url>`;
-    });
-    
-    // Close sitemap
-    sitemapContent += `
+  </url>`).join('\n')}
 </urlset>`;
 
-    // Return the XML with the appropriate content type
+    // Return with proper headers for XML content
     return new NextResponse(sitemapContent, {
       headers: {
         'Content-Type': 'application/xml',
@@ -52,7 +42,7 @@ export async function GET() {
       }
     });
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    console.error('Error generating sitemap:', error instanceof Error ? error.message : String(error));
     return new NextResponse('Error generating sitemap', { 
       status: 500,
       headers: { 'Content-Type': 'text/plain' }

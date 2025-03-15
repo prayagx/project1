@@ -35,9 +35,20 @@ const nextConfig = {
   // Configuration for the latest Next.js
   experimental: {
     optimizePackageImports: ['@heroicons/react', '@headlessui/react', 'framer-motion'],
+    // Enhanced build output and error reporting
+    instrumentationHook: true,
+    // Improved performance for large deps
+    turbotrace: {
+      logLevel: 'error'
+    }
   },
-  // Adjust to prevent sitemap generation errors
+  // Improved webpack configuration for compatibility
   webpack: (config) => {
+    // Add specific resolve extensions to handle JS modules correctly
+    config.resolve.extensionAlias = {
+      '.js': ['.js', '.ts', '.tsx'],
+      '.jsx': ['.jsx', '.tsx']
+    };
     return config;
   },
 };
