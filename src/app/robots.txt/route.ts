@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server';
 import sitemap from '../utils/sitemap';
-import { seoConfig } from '../config';
 
 // Add revalidation setting for static export
 export const revalidate = 1;
 
 export async function GET() {
-  // Generate robots.txt content using the utility
-  const content = sitemap.generateRobotsTxt(seoConfig.siteUrl);
+  // Generate robots.txt content directly
+  const content = `# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+Sitemap: ${sitemap.siteUrl}/sitemap.xml
+`;
 
   return new NextResponse(content, {
     headers: {

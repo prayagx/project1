@@ -1,8 +1,6 @@
-import { seoConfig } from '../config';
-
-// Simple direct export object with minimal complexity
+// Plain JavaScript version - sometimes TypeScript can cause build issues
 const sitemap = {
-  siteUrl: seoConfig.siteUrl || 'https://macromindai.com',
+  siteUrl: 'https://macromindai.com',
   pages: [
     { url: '/', priority: 1.0, changefreq: 'weekly' },
     { url: '/#generator', priority: 0.9, changefreq: 'daily' },
@@ -15,5 +13,5 @@ const sitemap = {
   ]
 };
 
-// Default export only, no named exports
-export default sitemap; 
+// Direct default export
+module.exports = sitemap; 

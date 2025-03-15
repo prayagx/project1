@@ -1,15 +1,33 @@
 import { NextResponse } from 'next/server';
 import sitemap from '../utils/sitemap';
-import { seoConfig } from '../config';
 
 // Add revalidation setting for static export
 export const revalidate = 1;
 
 export async function GET() {
   try {
-    // Generate the sitemap content using the new utility
-    const sitemapGenerator = await sitemap.generateSitemap(seoConfig.siteUrl);
-    const sitemapContent = sitemapGenerator.generateXML();
+    // Generate the sitemap content directly
+    const baseUrl = sitemap.siteUrl;
+    const currentDate = new Date().toISOString().split('T')[0];
+    
+    // Create sitemap XML content
+    let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+    
+    // Add each URL to the sitemap
+    sitemap.pages.forEach(page => {
+      sitemapContent += `
+  <url>
+    <loc>${baseUrl}${page.url}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority.toFixed(1)}</priority>
+  </url>`;
+    });
+    
+    // Close sitemap
+    sitemapContent += `
+</urlset>`;
 
     // Return the XML with the appropriate content type
     return new NextResponse(sitemapContent, {
