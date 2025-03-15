@@ -2,10 +2,9 @@
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://macromindai.com';
+const currentDate = new Date().toISOString();
 
 export default function sitemap() {
-  const currentDate = new Date().toISOString().split('T')[0];
-  
   return [
     {
       url: `${SITE_URL}/`,
