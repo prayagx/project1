@@ -7,7 +7,7 @@
     "open-chrome": "open -a 'Google Chrome' http://localhost:3001",
     "chrome": "node scripts/start.mjs",
     "live": "node scripts/live-server.mjs",
-    "build": "next build",
+    "build": "tsc --project tsconfig.netlify.json && next build",
     "postinstall": "npm audit fix --force || true",
     "start": "next start",
     "lint": "next lint",
