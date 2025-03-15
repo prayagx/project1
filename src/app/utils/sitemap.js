@@ -1,5 +1,5 @@
-// Direct default export with no intermediary variable
-module.exports = {
+// Direct ES modules export syntax that Next.js expects
+export default {
   siteUrl: 'https://macromindai.com',
   pages: [
     { url: '/', priority: 1.0, changefreq: 'weekly' },
