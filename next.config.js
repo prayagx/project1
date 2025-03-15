@@ -24,10 +24,6 @@ const nextConfig = {
   experimental: {
     // Optimize package imports (stable in Next.js 15)
     optimizePackageImports: ['@heroicons/react', '@headlessui/react', 'framer-motion'],
-    // Handle common module resolution issues
-    resolveAlias: {
-      '@': './src',
-    },
   },
   // Improved webpack configuration for compatibility
   webpack: (config) => {
@@ -36,8 +32,18 @@ const nextConfig = {
       '.js': ['.js', '.ts', '.tsx'],
       '.jsx': ['.jsx', '.tsx']
     };
+    
+    // Add alias for path resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.join(__dirname, 'src')
+    };
+    
     return config;
   },
 };
+
+// Import path module for resolving directories
+const path = require('path');
 
 module.exports = nextConfig; 
