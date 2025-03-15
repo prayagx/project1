@@ -1,5 +1,21 @@
 import { NextResponse } from 'next/server';
-import sitemap from '../utils/sitemap';
+// Import sitemap with a more flexible approach
+import sitemapModule from '../utils/sitemap';
+
+// Define the interface for the sitemap object
+interface SitemapPage {
+  url: string;
+  priority: number;
+  changefreq: string;
+}
+
+interface SitemapData {
+  siteUrl: string;
+  pages: SitemapPage[];
+}
+
+// Handle both direct export and { default } export
+const sitemap = ('default' in sitemapModule ? sitemapModule.default : sitemapModule) as SitemapData;
 
 // Add revalidation setting for static export
 export const revalidate = 1;
@@ -15,7 +31,7 @@ export async function GET() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
     
     // Add each URL to the sitemap
-    sitemap.pages.forEach(page => {
+    sitemap.pages.forEach((page: SitemapPage) => {
       sitemapContent += `
   <url>
     <loc>${baseUrl}${page.url}</loc>
